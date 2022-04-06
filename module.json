@@ -1,0 +1,11 @@
+{
+  "cjc_version": "0.27.1",
+  "organization": "huawei",
+  "name": "toml",
+  "description": "nothing here",
+  "version": "0.1.0",
+  "requires": {},
+  "package_requires": {},
+  "foreign_requires": {},
+  "output_type": "dynamic"
+}
