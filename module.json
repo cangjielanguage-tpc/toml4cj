@@ -7,5 +7,6 @@
   "requires": {},
   "package_requires": {},
   "foreign_requires": {},
-  "output_type": "dynamic"
+  "output_type": "dynamic",
+  "command_option": ["-g"]
 }

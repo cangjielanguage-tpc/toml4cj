@@ -62,24 +62,48 @@ public class Decoder {
             case (0 < data.indexOf(lf).getOrDefault({=> -1})) => data.split(lf, removeEmpty: true)
             case _ => throw Exception("Invalid toml")
         }
-        for (line in lines) {
-            match {
-                case IntegerParser.isA(line) => // do somethings
-                                                IntegerParser.asA(line)
-                case FloatParser.isA(line) => // do somethings
-                                              FloatParser.asA(line)
-                case BooleanParser.isA(line) => // do somethings
-                                                BooleanParser.asA(line)
-                case DateTimeParser.isA(line) => // do somethings
-                                                 DateTimeParser.asA(line)
-                case StringParser.isA(line) => // do somethings
-                                                 StringParser.asA(line)
-                case ListParser.isA(line) => // do somethings
-                                                 ListParser.asA(line)
-                case MapParser.isA(line) => // do somethings
-                                                 MapParser.asA(line)
+        let element: Element = Element(lines)
+        let docMap: HashMap<String, Array<Byte>> = element.parse()
+        let docIterator: HashMapIterator<String, Array<Byte>> = docMap.iterator()
+        while(true) {
+            match(docIterator.next()) {
+                case Some((key, value)) => match {
+                                                case IntegerParser.isA(value, key: key) => // do somethings
+                                                                                           IntegerParser.asA(value, key: key)
+                                                case FloatParser.isA(value, key: key) => // do somethings
+                                                                                         FloatParser.asA(value, key: key)
+                                                case BooleanParser.isA(value, key: key) => // do somethings
+                                                                                           BooleanParser.asA(value, key: key)
+                                                case DateTimeParser.isA(value, key: key) => // do somethings
+                                                                                            DateTimeParser.asA(value, key: key)
+                                                case StringParser.isA(value, key: key) => // do somethings
+                                                                                          StringParser.asA(value, key: key)
+                                                case ListParser.isA(value, key: key) => // do somethings
+                                                                                        ListParser.asA(value, key: key)
+                                                case MapParser.isA(value, key: key) => // do somethings
+                                                                                       MapParser.asA(value, key: key)
+                                            }
+                case None => break
             }
         }
+        // for (item in lines) {
+        //     match {
+        //         case IntegerParser.isA(line) => // do somethings
+        //                                         IntegerParser.asA(line)
+        //         case FloatParser.isA(line) => // do somethings
+        //                                       FloatParser.asA(line)
+        //         case BooleanParser.isA(line) => // do somethings
+        //                                         BooleanParser.asA(line)
+        //         case DateTimeParser.isA(line) => // do somethings
+        //                                          DateTimeParser.asA(line)
+        //         case StringParser.isA(line) => // do somethings
+        //                                          StringParser.asA(line)
+        //         case ListParser.isA(line) => // do somethings
+        //                                          ListParser.asA(line)
+        //         case MapParser.isA(line) => // do somethings
+        //                                          MapParser.asA(line)
+        //     }
+        // }
     }
 
     private func readData(): String {

@@ -6,6 +6,8 @@
 
 package decoders.parsers
 
+import enumerations.Value
+
 /**
  * parser 抽象类
  *
@@ -13,5 +15,5 @@ package decoders.parsers
  */
 interface Parserable {
     static func isA(value: String): Bool
-    static func asA(value: String): Bool
+    static func asA(value: Array<Byte>, key!: String): Value
 }
