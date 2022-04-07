@@ -15,6 +15,13 @@ public class Decoder {
     var stream: Option<Stream> = None
     var data: Option<String> = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
+    static let booleanParser: BooleanParser = BooleanParser()
+    static let dateTimeParser: DateTimeParser = DateTimeParser()
+    static let floatParser: FloatParser = FloatParser()
+    static let integerParser: IntegerParser = IntegerParser()
+    static let listParser: ListParser = ListParser()
+    static let mapParser: MapParser = MapParser()
+    static let stringParser: StringParser = StringParser()
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
 
     public init() {
@@ -55,11 +62,9 @@ public class Decoder {
     public func decode() {
         let data: String = readData()
         // Todo: Multi-line string is not implement
-        let lf: String = String.fromUtf8([0x0A])
-        let crlf: String = String.fromUtf8([0x0D, 0x0A])
         let lines: Array<String> = match {
-            case (0 < data.indexOf(crlf).getOrDefault({ => -1})) => data.split(crlf, removeEmpty: true)
-            case (0 < data.indexOf(lf).getOrDefault({=> -1})) => data.split(lf, removeEmpty: true)
+            case (0 < data.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => data.split(Symbols.CRLF, removeEmpty: true)
+            case (0 < data.indexOf(Symbols.LF).getOrDefault({=> -1})) => data.split(Symbols.LF, removeEmpty: true)
             case _ => throw Exception("Invalid toml")
         }
         let element: Element = Element(lines)
@@ -68,42 +73,24 @@ public class Decoder {
         while(true) {
             match(docIterator.next()) {
                 case Some((key, value)) => match {
-                                                case IntegerParser.isA(value, key: key) => // do somethings
-                                                                                           IntegerParser.asA(value, key: key)
-                                                case FloatParser.isA(value, key: key) => // do somethings
-                                                                                         FloatParser.asA(value, key: key)
-                                                case BooleanParser.isA(value, key: key) => // do somethings
-                                                                                           BooleanParser.asA(value, key: key)
-                                                case DateTimeParser.isA(value, key: key) => // do somethings
-                                                                                            DateTimeParser.asA(value, key: key)
-                                                case StringParser.isA(value, key: key) => // do somethings
-                                                                                          StringParser.asA(value, key: key)
-                                                case ListParser.isA(value, key: key) => // do somethings
-                                                                                        ListParser.asA(value, key: key)
-                                                case MapParser.isA(value, key: key) => // do somethings
-                                                                                       MapParser.asA(value, key: key)
+                                                case integerParser.isA(value, key: key) => // do somethings
+                                                                                           integerParser.asA(value, key: key)!
+                                                case floatParser.isA(value, key: key) => // do somethings
+                                                                                         floatParser.asA(value, key: key)!
+                                                case booleanParser.isA(value, key: key) => // do somethings
+                                                                                           booleanParser.asA(value, key: key)!
+                                                case dateTimeParser.isA(value, key: key) => // do somethings
+                                                                                            dateTimeParser.asA(value, key: key)!
+                                                case stringParser.isA(value, key: key) => // do somethings
+                                                                                          stringParser.asA(value, key: key)!
+                                                case listParser.isA(value, key: key) => // do somethings
+                                                                                        listParser.asA(value, key: key)!
+                                                case mapParser.isA(value, key: key) => // do somethings
+                                                                                       mapParser.asA(value, key: key)!
                                             }
                 case None => break
             }
         }
-        // for (item in lines) {
-        //     match {
-        //         case IntegerParser.isA(line) => // do somethings
-        //                                         IntegerParser.asA(line)
-        //         case FloatParser.isA(line) => // do somethings
-        //                                       FloatParser.asA(line)
-        //         case BooleanParser.isA(line) => // do somethings
-        //                                         BooleanParser.asA(line)
-        //         case DateTimeParser.isA(line) => // do somethings
-        //                                          DateTimeParser.asA(line)
-        //         case StringParser.isA(line) => // do somethings
-        //                                          StringParser.asA(line)
-        //         case ListParser.isA(line) => // do somethings
-        //                                          ListParser.asA(line)
-        //         case MapParser.isA(line) => // do somethings
-        //                                          MapParser.asA(line)
-        //     }
-        // }
     }
 
     private func readData(): String {

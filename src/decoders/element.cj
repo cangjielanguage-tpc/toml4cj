@@ -17,8 +17,9 @@ public class Element {
             var key: String = ""
             var value: String = ""
             var line: String = lines[lineNo]
-            // 处理多行文本
+            // 多行文本
             if (0 < (line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0)) {
+                // Todo: need to optimize
                 // 如果多行文本的左边第一个非空白是等号则是多行文本
                 let tripleQuoteIndex: Int64 = line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0
                 // 获取当前行的第一个等号
@@ -49,8 +50,15 @@ public class Element {
                     }
                 }
                 docMap.put(key, value.toUtf8Array())
+                lineNo += 1
             }
-            lineNo += 1
+            // Todo: 整型
+            // Todo: 浮点型
+            // Todo: 布尔型
+            // Todo: 日期时间
+            // Todo: 单行文本
+            // Todo: 数组
+            // Todo: 表
         }
         docMap
     }
