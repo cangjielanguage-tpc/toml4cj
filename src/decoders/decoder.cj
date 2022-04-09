@@ -15,13 +15,13 @@ public class Decoder {
     var stream: Option<Stream> = None
     var data: Option<String> = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
-    static let booleanParser: BooleanParser = BooleanParser()
-    static let dateTimeParser: DateTimeParser = DateTimeParser()
-    static let floatParser: FloatParser = FloatParser()
-    static let integerParser: IntegerParser = IntegerParser()
-    static let listParser: ListParser = ListParser()
-    static let mapParser: MapParser = MapParser()
-    static let stringParser: StringParser = StringParser()
+    // static let booleanParser: BooleanParser = BooleanParser()
+    // static let dateTimeParser: DateTimeParser = DateTimeParser()
+    // static let floatParser: FloatParser = FloatParser()
+    // static let integerParser: IntegerParser = IntegerParser()
+    // static let listParser: ListParser = ListParser()
+    // static let mapParser: MapParser = MapParser()
+    // static let stringParser: StringParser = StringParser()
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
 
     public init() {
@@ -61,36 +61,41 @@ public class Decoder {
 
     public func decode() {
         let data: String = readData()
+        let sep: String
         // Todo: Multi-line string is not implement
         let lines: Array<String> = match {
-            case (0 < data.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => data.split(Symbols.CRLF, removeEmpty: true)
-            case (0 < data.indexOf(Symbols.LF).getOrDefault({=> -1})) => data.split(Symbols.LF, removeEmpty: true)
+            case (0 < data.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => sep = Symbols.CRLF
+                                                                            data.split(Symbols.CRLF, removeEmpty: false)
+            case (0 < data.indexOf(Symbols.LF).getOrDefault({=> -1})) => sep = Symbols.LF
+                                                                         data.split(Symbols.LF, removeEmpty: false)
             case _ => throw Exception("Invalid toml")
         }
         let element: Element = Element(lines)
-        let docMap: HashMap<String, Array<Byte>> = element.parse()
-        let docIterator: HashMapIterator<String, Array<Byte>> = docMap.iterator()
-        while(true) {
-            match(docIterator.next()) {
-                case Some((key, value)) => match {
-                                                case integerParser.isA(value, key: key) => // do somethings
-                                                                                           integerParser.asA(value, key: key)!
-                                                case floatParser.isA(value, key: key) => // do somethings
-                                                                                         floatParser.asA(value, key: key)!
-                                                case booleanParser.isA(value, key: key) => // do somethings
-                                                                                           booleanParser.asA(value, key: key)!
-                                                case dateTimeParser.isA(value, key: key) => // do somethings
-                                                                                            dateTimeParser.asA(value, key: key)!
-                                                case stringParser.isA(value, key: key) => // do somethings
-                                                                                          stringParser.asA(value, key: key)!
-                                                case listParser.isA(value, key: key) => // do somethings
-                                                                                        listParser.asA(value, key: key)!
-                                                case mapParser.isA(value, key: key) => // do somethings
-                                                                                       mapParser.asA(value, key: key)!
-                                            }
-                case None => break
-            }
-        }
+        let docMap: HashMap<String, Array<Byte>> = element.parse(sep)
+        let v: String = String.fromUtf8(docMap.get("foo") ?? [78, 111, 110, 101])
+        println(v)
+        // let docIterator: HashMapIterator<String, Array<Byte>> = docMap.iterator()
+        // while(true) {
+        //     match(docIterator.next()) {
+        //         case Some((key, value)) => match {
+        //                                         case integerParser.isA(value, key: key) => // do somethings
+        //                                                                                    integerParser.asA(value, key: key)!
+        //                                         case floatParser.isA(value, key: key) => // do somethings
+        //                                                                                  floatParser.asA(value, key: key)!
+        //                                         case booleanParser.isA(value, key: key) => // do somethings
+        //                                                                                    booleanParser.asA(value, key: key)!
+        //                                         case dateTimeParser.isA(value, key: key) => // do somethings
+        //                                                                                     dateTimeParser.asA(value, key: key)!
+        //                                         case stringParser.isA(value, key: key) => // do somethings
+        //                                                                                   stringParser.asA(value, key: key)!
+        //                                         case listParser.isA(value, key: key) => // do somethings
+        //                                                                                 listParser.asA(value, key: key)!
+        //                                         case mapParser.isA(value, key: key) => // do somethings
+        //                                                                                mapParser.asA(value, key: key)!
+        //                                     }
+        //         case None => break
+        //     }
+        // }
     }
 
     private func readData(): String {

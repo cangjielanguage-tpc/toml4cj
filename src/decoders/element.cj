@@ -9,7 +9,7 @@ public class Element {
         this.lines = lines
     }
 
-    public func parse(): HashMap<String, Array<Byte>> {
+    public func parse(sep: String): HashMap<String, Array<Byte>> {
         let docMap: HashMap<String, Array<Byte>> = HashMap<String, Array<Byte>>() 
         let lineCount: Int64 = lines.size()
         var lineNo: Int64 = 0
@@ -18,6 +18,15 @@ public class Element {
             var value: String = ""
             var line: String = lines[lineNo]
             let equalSignIndex: Int64 = line.indexOf(Symbols.EQUAL_SYMBOL) ?? -1
+            // 判断是否是注释
+            if (line.trim().charAt(0) == Symbols.NUMBER_SIGN.charAt(0)) {
+                lineNo+=1
+                continue
+            }
+            if (line.isBlank()) {
+                lineNo += 1
+                continue
+            }
 
             if (0 == equalSignIndex) {
                 throw Exception("Invalid toml format")
@@ -28,6 +37,8 @@ public class Element {
             if (equalSignIndex > 0) {
                 leftValue = line.substring(0, equalSignIndex)
                 rightValue = line.substring(equalSignIndex + 1)
+            } else {
+                // 表或表数组
             }
             // 多行文本
             if (0 < (line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0)) {
@@ -45,14 +56,14 @@ public class Element {
                     value = line.substring(valueStartAt, lastTripleQuoteIndex - valueStartAt)
                 } else {
                     // 在当前行没有找到多行文本
-                    value += line.substring(valueStartAt)
+                    value += (line.substring(valueStartAt) + appendNewline(line, sep))
                     // 继续往下寻找
                     while (true) {
                         lineNo += 1
                         line = lines[lineNo]
                         let tripleQuoteIndex = line.indexOf(Symbols.TRIPLE_QUOTE) ?? -1
                         if (tripleQuoteIndex == -1) {
-                            value += line
+                            value += (line + appendNewline(line, sep))
                         } else {
                             value += line.substring(0, tripleQuoteIndex)
                             break
@@ -97,5 +108,12 @@ public class Element {
             // Todo: 表
         }
         docMap
+    }
+
+    private func appendNewline(line: String, sep: String): String {
+        if (line.trimAsciiRight().endsWith("\\")) {
+            ""
+        }
+        sep
     }
 }
