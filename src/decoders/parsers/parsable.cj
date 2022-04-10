@@ -13,7 +13,6 @@ import enumerations.Value
  *
  * @description: SubParser需要继承该抽象类
  */
-interface Parserable {
-    func isA(value: String): Bool
-    func asA(value: Array<Byte>, key!: String): Result<Value>
+public interface Parsable {
+    func asA(line: String): Result<Value>
 }

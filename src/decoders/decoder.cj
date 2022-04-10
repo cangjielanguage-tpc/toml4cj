@@ -9,6 +9,7 @@ package decoders
 from std import io.*
 import enumerations.*
 from std import collection.*
+import decoders.parsers.IntegerParser
 
 
 public class Decoder {
@@ -18,7 +19,7 @@ public class Decoder {
     // static let booleanParser: BooleanParser = BooleanParser()
     // static let dateTimeParser: DateTimeParser = DateTimeParser()
     // static let floatParser: FloatParser = FloatParser()
-    // static let integerParser: IntegerParser = IntegerParser()
+    static let integerParser: IntegerParser = IntegerParser()
     // static let listParser: ListParser = ListParser()
     // static let mapParser: MapParser = MapParser()
     // static let stringParser: StringParser = StringParser()
@@ -70,30 +71,41 @@ public class Decoder {
                                                                          data.split(Symbols.LF, removeEmpty: false)
             case _ => throw Exception("Invalid toml")
         }
-        let element: Element = Element(lines)
-        let docMap: HashMap<String, Array<Byte>> = element.parse(sep)
-        let v: String = String.fromUtf8(docMap.get("foo") ?? [78, 111, 110, 101])
-        println(v)
+        // let element: Element = Element(lines)
+        // let docMap: HashMap<String, Array<Byte>> = element.parse(sep)
+        // let v: String = String.fromUtf8(docMap.get("foo") ?? [78, 111, 110, 101])
+        // println(v)
         // let docIterator: HashMapIterator<String, Array<Byte>> = docMap.iterator()
-        // while(true) {
-        //     match(docIterator.next()) {
-        //         case Some((key, value)) => match {
-        //                                         case integerParser.isA(value, key: key) => // do somethings
-        //                                                                                    integerParser.asA(value, key: key)!
-        //                                         case floatParser.isA(value, key: key) => // do somethings
-        //                                                                                  floatParser.asA(value, key: key)!
-        //                                         case booleanParser.isA(value, key: key) => // do somethings
-        //                                                                                    booleanParser.asA(value, key: key)!
-        //                                         case dateTimeParser.isA(value, key: key) => // do somethings
-        //                                                                                     dateTimeParser.asA(value, key: key)!
-        //                                         case stringParser.isA(value, key: key) => // do somethings
-        //                                                                                   stringParser.asA(value, key: key)!
-        //                                         case listParser.isA(value, key: key) => // do somethings
-        //                                                                                 listParser.asA(value, key: key)!
-        //                                         case mapParser.isA(value, key: key) => // do somethings
-        //                                                                                mapParser.asA(value, key: key)!
-        //                                     }
-        //         case None => break
+        
+        // Todo: 处理key
+        // Todo: 处理多行文本
+        
+        // Todo：处理其他类型数据
+        // example: 处理整型数据
+        let v: Int64 = match(integerParser.asA(lines[0])) {
+            case Ok(x) => match(x) {
+                case Integer(y) => y
+                case _ => -1
+            }
+            case Err(_) => throw Exception("Not an integer")
+        }
+
+        println(v)
+        // for(line in lines) {
+        //      match {
+        //         case integerParser.isA(line) => integerParser.asA(value, key: key)!
+        //         // case floatParser.isA(value, key: key) => // do somethings
+        //         //                                             floatParser.asA(value, key: key)!
+        //         // case booleanParser.isA(value, key: key) => // do somethings
+        //         //                                             booleanParser.asA(value, key: key)!
+        //         // case dateTimeParser.isA(value, key: key) => // do somethings
+        //         //                                             dateTimeParser.asA(value, key: key)!
+        //         // case stringParser.isA(value, key: key) => // do somethings
+        //         //                                             stringParser.asA(value, key: key)!
+        //         // case listParser.isA(value, key: key) => // do somethings
+        //         //                                         listParser.asA(value, key: key)!
+        //         // case mapParser.isA(value, key: key) => // do somethings
+        //         //                                         mapParser.asA(value, key: key)!
         //     }
         // }
     }
