@@ -1,12 +1,12 @@
 {
   "cjc_version": "0.27.1",
-  "organization": "huawei",
+  "organization": "Cangjie Library Team",
   "name": "toml",
-  "description": "nothing here",
+  "description": "The decoder and encoder for toml file by Cangjie.",
   "version": "0.1.0",
   "requires": {},
   "package_requires": {},
   "foreign_requires": {},
   "output_type": "dynamic",
-  "command_option": ["-g"]
+  "command_option": "-g"
 }
