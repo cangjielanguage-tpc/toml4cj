@@ -1,0 +1,119 @@
+package decoders
+
+from std import unicode.* 
+
+public class Element {
+    let lines: Array<String>
+
+    init(lines: Array<String>) {
+        this.lines = lines
+    }
+
+    public func parse(sep: String): HashMap<String, Array<Byte>> {
+        let docMap: HashMap<String, Array<Byte>> = HashMap<String, Array<Byte>>() 
+        let lineCount: Int64 = lines.size()
+        var lineNo: Int64 = 0
+        while (lineNo < lineCount) {
+            var key: String = ""
+            var value: String = ""
+            var line: String = lines[lineNo]
+            let equalSignIndex: Int64 = line.indexOf(Symbols.EQUAL_SYMBOL) ?? -1
+            // 判断是否是注释
+            if (line.trim().charAt(0) == Symbols.NUMBER_SIGN.charAt(0)) {
+                lineNo+=1
+                continue
+            }
+            if (line.isBlank()) {
+                lineNo += 1
+                continue
+            }
+
+            if (0 == equalSignIndex) {
+                throw Exception("Invalid toml format")
+            }
+            
+            var leftValue: String = ""
+            var rightValue: String = ""
+            if (equalSignIndex > 0) {
+                leftValue = line.substring(0, equalSignIndex)
+                rightValue = line.substring(equalSignIndex + 1)
+            } else {
+                // 表或表数组
+            }
+            // 多行文本
+            if (0 < (line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0)) {
+                // Todo: need to optimize
+                // 如果多行文本的左边第一个非空白是等号则是多行文本
+                let tripleQuoteIndex: Int64 = line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0
+                // 获取当前行的第一个等号
+                let equalSignIndex: Int64 = line.indexOf(Symbols.EQUAL_SYMBOL) ?? 0
+                key = line.substring(0, equalSignIndex - 1).trim()
+                // 查找当前行的末尾是否有多行文本结束标记
+                let lastTripleQuoteIndex = line.lastIndexOf(Symbols.TRIPLE_QUOTE) ?? -1
+                let valueStartAt: Int64 = tripleQuoteIndex + Symbols.TRIPLE_QUOTE.size()
+                if (lastTripleQuoteIndex > tripleQuoteIndex) {
+                    // 在当前行中结束了多行文本
+                    value = line.substring(valueStartAt, lastTripleQuoteIndex - valueStartAt)
+                } else {
+                    // 在当前行没有找到多行文本
+                    value += (line.substring(valueStartAt) + appendNewline(line, sep))
+                    // 继续往下寻找
+                    while (true) {
+                        lineNo += 1
+                        line = lines[lineNo]
+                        let tripleQuoteIndex = line.indexOf(Symbols.TRIPLE_QUOTE) ?? -1
+                        if (tripleQuoteIndex == -1) {
+                            value += (line + appendNewline(line, sep))
+                        } else {
+                            value += line.substring(0, tripleQuoteIndex)
+                            break
+                        }
+                    }
+                }
+                // let subStr: String = line.substring(equalSignIndex + 1, (tripleQuoteIndex - equalSignIndex - 1))
+                // if (subStr.isBlank()) {
+                //     // 多行文本
+                //     // 寻找下一个"""的位置
+                //     let removeBlank: Bool = true
+                //     var start: Int64 = tripleQuoteIndex + 3
+
+                //     while (true) {
+                //         let lastTripleQuoteIndex = line.lastIndexOf(Symbols.TRIPLE_QUOTE) ?? -1
+                //         if (lastTripleQuoteIndex > tripleQuoteIndex || lastTripleQuoteIndex == 0) {
+                //             // 在当前行找到了结束符号
+                //             let length = if (start == 0) {0} else {lastTripleQuoteIndex - start - 1}
+                //             start = if (start == 0) {0} else {start + 1}
+                //             value += line.substring(start + 1, length)
+                //             break
+                //         } else {
+                //             // 在当前行没有找到结束符号
+                //             value += line.substring(start)
+                //             start = 0
+                //             lineNo += 1
+                //             line = lines[lineNo]
+                //         }
+                //     }
+                // }
+                docMap.put(key, value.toUtf8Array())
+                lineNo += 1
+            }
+            lineNo += 1
+            // Todo: 整型
+            // if (!rightValue.isEmpty() && rightValue.trim())
+            // Todo: 浮点型
+            // Todo: 布尔型
+            // Todo: 日期时间
+            // Todo: 单行文本
+            // Todo: 数组
+            // Todo: 表
+        }
+        docMap
+    }
+
+    private func appendNewline(line: String, sep: String): String {
+        if (line.trimAsciiRight().endsWith("\\")) {
+            ""
+        }
+        sep
+    }
+}
