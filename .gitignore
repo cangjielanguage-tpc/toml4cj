@@ -3,3 +3,6 @@
 /build
 module-resolve.json
 log.*.txt
+.git/
+.gitee/
+.vscode/
