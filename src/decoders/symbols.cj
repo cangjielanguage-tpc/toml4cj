@@ -9,4 +9,5 @@ public class Symbols {
     static public let TRIPLE_SINGLE_QUOTE: String = String.fromUtf8([0x27, 0x27, 0x27])
     static public let EQUAL_SYMBOL: String = String.fromUtf8([0x3D])
     static public let NUMBER_SIGN: String = String.fromUtf8([0x23])
+    static public let LEFT_SQUARE_BRACKET: String = String.fromUtf8([0x5B])
 }

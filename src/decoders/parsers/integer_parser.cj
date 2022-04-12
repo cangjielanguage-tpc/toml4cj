@@ -11,16 +11,6 @@ from std import convert.*
 
 public class IntegerParser <: Parsable {
     public func asA(line: String): Result<Value> {
-        if (line.isBlank()) {
-            return Err(Exception("Not a Integer"))
-        }
-        if (line.trimAsciiLeft().startsWith("#")) {
-            return Err(Exception("Not a Integer"))
-        }
-
-        if (-1 == (line.indexOf("=") ?? -1)) {
-            return Err(Exception("Not a Integer"))
-        }
         var rightValue: String = line.split("=", 2, removeEmpty: true)[1]
         let numberSignIndex = rightValue.indexOf("#") ?? -1
         if (numberSignIndex == 0) {
@@ -30,13 +20,8 @@ public class IntegerParser <: Parsable {
             rightValue = rightValue.substring(0, numberSignIndex)
         }
         
-        // rightValue = Regex("_").matcher(rightValue).replaceAll("")
-        
-        match(parseUInt64(rightValue)) {
-            case Some(x) => match (parseInt64(rightValue)) {
-                case Some(res) => Ok(Value.Integer(res))
-                case None => Err(Exception("Not a integer"))
-            }
+        match(parseInt64(rightValue)) {
+            case Some(x) => Ok(Value.Integer(x))
             case None => Err(Exception("Not a integer"))
         }
     }

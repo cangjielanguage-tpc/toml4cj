@@ -10,6 +10,8 @@ from std import io.*
 import enumerations.*
 from std import collection.*
 import decoders.parsers.IntegerParser
+import exceptions.*
+from std import regex.*
 
 
 public class Decoder {
@@ -71,43 +73,45 @@ public class Decoder {
                                                                          data.split(Symbols.LF, removeEmpty: false)
             case _ => throw Exception("Invalid toml")
         }
-        // let element: Element = Element(lines)
-        // let docMap: HashMap<String, Array<Byte>> = element.parse(sep)
-        // let v: String = String.fromUtf8(docMap.get("foo") ?? [78, 111, 110, 101])
-        // println(v)
-        // let docIterator: HashMapIterator<String, Array<Byte>> = docMap.iterator()
-        
-        // Todo: 处理key
-        // Todo: 处理多行文本
-        
-        // Todo：处理其他类型数据
-        // example: 处理整型数据
-        let v: Int64 = match(integerParser.asA(lines[0])) {
-            case Ok(x) => match(x) {
-                case Integer(y) => y
-                case _ => -1
-            }
-            case Err(_) => throw Exception("Not an integer")
-        }
 
-        println(v)
-        // for(line in lines) {
-        //      match {
-        //         case integerParser.isA(line) => integerParser.asA(value, key: key)!
-        //         // case floatParser.isA(value, key: key) => // do somethings
-        //         //                                             floatParser.asA(value, key: key)!
-        //         // case booleanParser.isA(value, key: key) => // do somethings
-        //         //                                             booleanParser.asA(value, key: key)!
-        //         // case dateTimeParser.isA(value, key: key) => // do somethings
-        //         //                                             dateTimeParser.asA(value, key: key)!
-        //         // case stringParser.isA(value, key: key) => // do somethings
-        //         //                                             stringParser.asA(value, key: key)!
-        //         // case listParser.isA(value, key: key) => // do somethings
-        //         //                                         listParser.asA(value, key: key)!
-        //         // case mapParser.isA(value, key: key) => // do somethings
-        //         //                                         mapParser.asA(value, key: key)!
-        //     }
-        // }
+        for (line in lines) {
+            let lineTrimedLeft = line.trimAsciiLeft()
+            // Ignore the comment line
+            if (lineTrimedLeft.startsWith(Symbols.NUMBER_SIGN)) {
+                continue
+            }
+            // Todo: parse key
+            if (lineTrimedLeft.startsWith(Symbols.EQUAL_SYMBOL)) {
+                throw TomlIllegalKeyException("Illegal toml key: the key is empty")
+            }
+            
+            var key: Buffer<String> = Buffer<String>()
+            if (lineTrimedLeft.startsWith(Symbols.LEFT_SQUARE_BRACKET)) {
+                // Todo: Table
+            }
+            
+            let a: String = lineTrimedLeft.split(Symbols.EQUAL_SYMBOL, 2)[0]
+            // "127.0.0.1" = "value"
+            // Todo
+            // foo = "bar"
+            let keyMatcher: Matcher = Regex("[a-zA-Z0-9_-]+").matcher(a)
+            keyMatcher.fullMatch().getOrThrow({ => TomlIllegalKeyException("Illegal toml key: the key is illegal")})
+            key.add(a)
+
+            // Todo: 处理多行文本
+            // Todo：处理其他类型数据
+            // 处理整型数据
+            let v: Int64 = match(integerParser.asA(line)) {
+                case Ok(x) => match(x) {
+                    case Integer(y) => y
+                    case _ => -1
+                }
+                case Err(_) => throw Exception("Not an integer")
+            }
+
+            // 处理布尔型数据
+        }
+        
     }
 
     private func readData(): String {

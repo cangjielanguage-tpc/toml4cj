@@ -6,6 +6,12 @@
 
 package exceptions
 
-public class TomlBaseException <: Exception {
+public open class TomlBaseException <: Exception {
+    public init() {
+        this("Some error occurred")
+    }
 
+    public init(message: String) {
+        super(message)
+    }
 }
