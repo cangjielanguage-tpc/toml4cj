@@ -12,11 +12,11 @@
 </p>
 
 
-## <img alt="" src="./doc/assets/readme-icon-introduction.png" style="display: inline-block;" width=3%/>简介
+## <img alt="" src="./doc/assets/readme-icon-introduction.png" style="display: inline-block;" width=4%/> 简介
 
 TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML 被设计成可以无歧义地映射为哈希表。TOML 应该能很容易地被解析成各种语言中的数据结构。https://toml.io/cn/
 
-该项目是仓颉语言实现TOML v1.0.0的语言库。
+该项目是仓颉语言实现 TOML v1.0.0 的语言库。
 
 ### 特性
 
@@ -35,7 +35,7 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 
 
 
-##    <img alt="" src="./doc/assets/readme-icon-framework.png" style="display: inline-block;" width=3%/> 架构
+##    <img alt="" src="./doc/assets/readme-icon-framework.png" style="display: inline-block;" width=4%/> 架构
 
 ### 架构图：
 
@@ -44,11 +44,11 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 </p>
 
 
-- 通过load入口载入toml文件
+- 通过 load 入口载入 toml 文件
 
-- 区分语法使用不同parser进行解析
+- 区分语法使用不同 parser 进行解析
 
-- 最后生成DataModel方便仓颉读取
+- 最后生成 DataModel 方便仓颉读取
 
 ### 源码目录：
 
@@ -75,11 +75,11 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
     └── UT
 ```
 
-- `doc`是库的设计文档、提案、库的使用文档
-- `src`是库源码目录
-- `test`是存放测试用例，包括HLT用例、LLT 用例和UT用例
+- `doc` 是库的设计文档、提案、库的使用文档
+- `src` 是库源码目录
+- `test` 是存放测试用例，包括 HLT 用例、LLT 用例和 UT 用例
 
-## <img alt="" src="./doc/assets/readme-icon-compile.png" style="display: inline-block;" width=3%/>编译运行
+## <img alt="" src="./doc/assets/readme-icon-compile.png" style="display: inline-block;" width=4%/> 编译运行
 
 ### 编译
 
@@ -101,6 +101,6 @@ cpm
 
 
 
-## <img alt="" src="./doc/assets/readme-icon-contribute.png" style="display: inline-block;" width=3%/>参与贡献
+## <img alt="" src="./doc/assets/readme-icon-contribute.png" style="display: inline-block;" width=4%/> 参与贡献
 
 [@Annlix](https://gitee.com/Annlix) [@chinesebear](https://gitee.com/chinesebear) [@it-worker](https://gitee.com/it-worker)
