@@ -13,6 +13,7 @@ import decoders.parsers.IntegerParser
 import exceptions.*
 from std import regex.*
 
+type element = HashMap<Key, Value>
 
 public class Decoder {
     var stream: Option<Stream> = None
@@ -63,18 +64,22 @@ public class Decoder {
     }
 
     public func decode() {
-        let data: String = readData()
+        let payload: String = readData()
         let sep: String
         // Todo: Multi-line string is not implement
         let lines: Array<String> = match {
-            case (0 < data.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => sep = Symbols.CRLF
-                                                                            data.split(Symbols.CRLF, removeEmpty: false)
-            case (0 < data.indexOf(Symbols.LF).getOrDefault({=> -1})) => sep = Symbols.LF
-                                                                         data.split(Symbols.LF, removeEmpty: false)
+            case (0 < payload.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => sep = Symbols.CRLF
+                                                                               payload.split(Symbols.CRLF, removeEmpty: false)
+            case (0 < payload.indexOf(Symbols.LF).getOrDefault({=> -1})) => sep = Symbols.LF
+                                                                            payload.split(Symbols.LF, removeEmpty: false)
             case _ => throw Exception("Invalid toml")
         }
 
+        let data: ArrayList<element> = ArrayList<element>()
+
         for (line in lines) {
+            let item: element = element()
+            var key: Key = Key()
             let lineTrimedLeft = line.trimAsciiLeft()
             // Ignore the comment line
             if (lineTrimedLeft.startsWith(Symbols.NUMBER_SIGN)) {
@@ -85,12 +90,11 @@ public class Decoder {
                 throw TomlIllegalKeyException("Illegal toml key: the key is empty")
             }
             
-            var key: Buffer<String> = Buffer<String>()
             if (lineTrimedLeft.startsWith(Symbols.LEFT_SQUARE_BRACKET)) {
                 // Todo: Table
             }
             
-            let a: String = lineTrimedLeft.split(Symbols.EQUAL_SYMBOL, 2)[0]
+            let a = lineTrimedLeft.split(Symbols.EQUAL_SYMBOL, 2)[0]
             // "127.0.0.1" = "value"
             // Todo
             // foo = "bar"
@@ -101,14 +105,12 @@ public class Decoder {
             // Todo: 处理多行文本
             // Todo：处理其他类型数据
             // 处理整型数据
-            let v: Int64 = match(integerParser.asA(line)) {
-                case Ok(x) => match(x) {
-                    case Integer(y) => y
-                    case _ => -1
-                }
+            let value: Value = match(integerParser.asA(line)) {
+                case Ok(x) => x
                 case Err(_) => throw Exception("Not an integer")
             }
-
+            
+            item.put(key, value)
             // 处理布尔型数据
         }
         
