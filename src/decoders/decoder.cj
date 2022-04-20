@@ -12,6 +12,7 @@ from std import collection.*
 import decoders.parsers.IntegerParser
 import exceptions.*
 from std import regex.*
+from std import unicode.*
 
 type element = HashMap<Key, Value>
 
@@ -64,9 +65,9 @@ public class Decoder {
     }
 
     public func decode() {
-        let payload: String = readData()
+        let payload: String = readData() // Origin data
         let sep: String
-        // Todo: Multi-line string is not implement
+        // 1. Split the lines, and assign the sep variable
         let lines: Array<String> = match {
             case (0 < payload.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => sep = Symbols.CRLF
                                                                                payload.split(Symbols.CRLF, removeEmpty: false)
@@ -80,27 +81,61 @@ public class Decoder {
         for (line in lines) {
             let item: element = element()
             var key: Key = Key()
-            let lineTrimedLeft = line.trimAsciiLeft()
+            let lineTrimed = line.trim()
             // Ignore the comment line
-            if (lineTrimedLeft.startsWith(Symbols.NUMBER_SIGN)) {
+            if (lineTrimed.startsWith(Symbols.NUMBER_SIGN)) {
                 continue
             }
-            // Todo: parse key
-            if (lineTrimedLeft.startsWith(Symbols.EQUAL_SYMBOL)) {
+            if (lineTrimed.startsWith(Symbols.EQUAL_SYMBOL)) {
                 throw TomlIllegalKeyException("Illegal toml key: the key is empty")
             }
             
-            if (lineTrimedLeft.startsWith(Symbols.LEFT_SQUARE_BRACKET)) {
+            if (lineTrimed.startsWith(Symbols.LEFT_SQUARE_BRACKET)) {
                 // Todo: Table
             }
             
-            let a = lineTrimedLeft.split(Symbols.EQUAL_SYMBOL, 2)[0]
+            /**
+             * 检查键是否合法
+             *
+             * 非法键：1. 不指定值 2. 键值对后必须换行或结束文件
+             */
+            let lineSplited: Array<String> = lineTrimed.split(Symbols.EQUAL_SYMBOL, 2)
+            let leftValue: String = lineSplited[0].trim()
+            let rightValue: String = lineSplited[1].trim()
+            if (rightValue.isBlank()) {
+                throw TomlIllegalValueException()
+            }
+
             // "127.0.0.1" = "value"
+            if (leftValue.startsWith(Symbols.QUOTE)) {
+                let nextQuoteIndex: Int64 = leftValue.indexOf(Symbols.QUOTE, 1) ?? 0
+                if (0 == nextQuoteIndex) {
+                    // " = "abc"
+                    throw TomlIllegalKeyException()
+                }
+                if (nextQuoteIndex == leftValue.size() - 1) {
+                    // "127.0.0.1" = "abc"
+                    key.add(leftValue)
+                } else {
+                    // "foo" . bar = "abc" | "foo". bar = "abc" | "foo".bar = "abc"
+                    var i: Int64 = nextQuoteIndex + 1
+                    key.add(leftValue.substring(0, nextQuoteIndex + 1))
+                    while(i < leftValue.size()) {
+                        if (leftValue.charAt(i).isWhiteSpace()) {
+                            i++
+                        } else {
+                            // Todo: 处理key
+                        }
+                        
+                    }
+                    // Todo: "foo"."bar".hi."hello.world" = "cde"
+                }
+            }
             // Todo
             // foo = "bar"
-            let keyMatcher: Matcher = Regex("[a-zA-Z0-9_-]+").matcher(a)
+            let keyMatcher: Matcher = Regex("[a-zA-Z0-9_-]+").matcher(leftValue)
             keyMatcher.fullMatch().getOrThrow({ => TomlIllegalKeyException("Illegal toml key: the key is illegal")})
-            key.add(a)
+            key.add(leftValue)
 
             // Todo: 处理多行文本
             // Todo：处理其他类型数据
