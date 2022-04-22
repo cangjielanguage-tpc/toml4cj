@@ -6,3 +6,4 @@ log.*.txt
 .git/
 .gitee/
 .vscode/
+*.bc

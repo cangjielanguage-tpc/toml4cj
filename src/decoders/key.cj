@@ -2,19 +2,35 @@ package decoders
 
 from std import unicode.*
 
-public record Key <: ToString & Hashable & Equatable<Key> {
-    var name: ArrayList<String>
+public class Key <: ToString & Hashable & Equatable<Key> {
+    var name: String = "" // 当前键的名称
+    var next: ArrayList<Key> = ArrayList<Key>([]) // 下一个键的内容
 
-    public init(name: Array<String>) {
-        this.name = ArrayList<String>(name)
+    public init(name: String, next: Key) {
+        this.name = name
+        this.next.add(next)
     }
 
     public init() {
-        this.name = ArrayList<String>(1)
+
     }
 
     public func toString(): String {
-        String.join(Array<String>(name), delimiter: Symbols.DOT)
+        var str: String = ""
+        let len: UInt64 = UInt64(next.size())
+        println(len)
+        // if (len == 0) {
+        //     str = name
+        // } else if (len == 1) {
+        //     str = name + "." + next.toString()
+        // } else if (len > 1) {
+        //     let nextsStr: ArrayList<String> = ArrayList<String>(len)
+        //     for (item in next) {
+        //         nextsStr.add(name + "." + item.toString())
+        //     }
+        //     str = String.join(Array<String>(nextsStr), Symbols.DOT)
+        // }
+        str
     }
 
     public func hashCode(): Int64 {
@@ -29,7 +45,11 @@ public record Key <: ToString & Hashable & Equatable<Key> {
         !toString().equals(rhs.toString())
     }
 
-    public mut func add(nameItem: String) {
-        name.add(nameItem)
+    // public mut func add(nameItem: String) {
+    //     name.add(nameItem)
+    // }
+
+    public func setName(n: String): Unit {
+        name = n
     }
 }

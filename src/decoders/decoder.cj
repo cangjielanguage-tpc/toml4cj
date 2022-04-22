@@ -9,10 +9,10 @@ package decoders
 from std import io.*
 import enumerations.*
 from std import collection.*
-import decoders.parsers.IntegerParser
 import exceptions.*
 from std import regex.*
 from std import unicode.*
+from std import serialization.*
 
 type element = HashMap<Key, Value>
 
@@ -23,7 +23,7 @@ public class Decoder {
     // static let booleanParser: BooleanParser = BooleanParser()
     // static let dateTimeParser: DateTimeParser = DateTimeParser()
     // static let floatParser: FloatParser = FloatParser()
-    static let integerParser: IntegerParser = IntegerParser()
+    // static let integerParser: IntegerParser = IntegerParser()
     // static let listParser: ListParser = ListParser()
     // static let mapParser: MapParser = MapParser()
     // static let stringParser: StringParser = StringParser()
@@ -65,90 +65,88 @@ public class Decoder {
     }
 
     public func decode() {
-        let payload: String = readData() // Origin data
-        let sep: String
-        // 1. Split the lines, and assign the sep variable
-        let lines: Array<String> = match {
-            case (0 < payload.indexOf(Symbols.CRLF).getOrDefault({ => -1})) => sep = Symbols.CRLF
-                                                                               payload.split(Symbols.CRLF, removeEmpty: false)
-            case (0 < payload.indexOf(Symbols.LF).getOrDefault({=> -1})) => sep = Symbols.LF
-                                                                            payload.split(Symbols.LF, removeEmpty: false)
-            case _ => throw Exception("Invalid toml")
-        }
+        let implicitGroups: ArrayList<Any> = ArrayList<Any>()
 
-        let data: ArrayList<element> = ArrayList<element>()
+        let original: String = readData()
+        var sl: Array<Char> = original.toCharArray()
+        let openArr: Int64 = 0
+        var openString: Bool = false
+        var openStrChar: Char = ""[0]
+        let multilineStr: Bool = false
+        let arrayOfTables: Bool = false
+        let beginLine: Bool = true
+        let keyGroup: Bool = false
+        var dottedKey: Bool = false
+        var keyName: Int64 = 0
+        var key: String = ""
+        var prevKey: String = ""
+        let lineNo: Int64 = 1
 
-        for (line in lines) {
-            let item: element = element()
-            var key: Key = Key()
-            let lineTrimed = line.trim()
-            // Ignore the comment line
-            if (lineTrimed.startsWith(Symbols.NUMBER_SIGN)) {
+        for (i in 0..sl.size()) {
+            let item: Char = sl[i]
+            if(item == Symbols.CR[0] && sl[i + 1] == Symbols.LF[0]) {
+                sl[i] = chr(0x20) // ' '
                 continue
             }
-            if (lineTrimed.startsWith(Symbols.EQUAL_SYMBOL)) {
-                throw TomlIllegalKeyException("Illegal toml key: the key is empty")
-            }
-            
-            if (lineTrimed.startsWith(Symbols.LEFT_SQUARE_BRACKET)) {
-                // Todo: Table
-            }
-            
-            /**
-             * 检查键是否合法
-             *
-             * 非法键：1. 不指定值 2. 键值对后必须换行或结束文件
-             */
-            let lineSplited: Array<String> = lineTrimed.split(Symbols.EQUAL_SYMBOL, 2)
-            let leftValue: String = lineSplited[0].trim()
-            let rightValue: String = lineSplited[1].trim()
-            if (rightValue.isBlank()) {
-                throw TomlIllegalValueException()
-            }
-
-            // "127.0.0.1" = "value"
-            if (leftValue.startsWith(Symbols.QUOTE)) {
-                let nextQuoteIndex: Int64 = leftValue.indexOf(Symbols.QUOTE, 1) ?? 0
-                if (0 == nextQuoteIndex) {
-                    // " = "abc"
-                    throw TomlIllegalKeyException()
+            if (0 != keyName) {
+                key += item
+                if (item == Symbols.LF[0]) {
+                    throw TomlDecodeErrorException("Key name found without value. Reach end of line.")
                 }
-                if (nextQuoteIndex == leftValue.size() - 1) {
-                    // "127.0.0.1" = "abc"
-                    key.add(leftValue)
-                } else {
-                    // "foo" . bar = "abc" | "foo". bar = "abc" | "foo".bar = "abc"
-                    var i: Int64 = nextQuoteIndex + 1
-                    key.add(leftValue.substring(0, nextQuoteIndex + 1))
-                    while(i < leftValue.size()) {
-                        if (leftValue.charAt(i).isWhiteSpace()) {
-                            i++
-                        } else {
-                            // Todo: 处理key
+                if (openString) {
+                    if (item == openStrChar) {
+                        var oddBackSlash: Bool = false
+                        var k: Int64 = 1
+                        while (i >= k && sl[i - k] == chr(0x5C)) {
+                            oddBackSlash = !oddBackSlash
+                            k += 1
                         }
-                        
+                        if (!oddBackSlash) {
+                            keyName = 2
+                            openString = false
+                            openStrChar = ""[0]
+                        }
                     }
-                    // Todo: "foo"."bar".hi."hello.world" = "cde"
+                    continue
+                } else if(keyName == 1) {
+                    if (item.isAsciiWhiteSpace()) {
+                        keyName = 2
+                        continue
+                    } else if (item == Symbols.DOT[0]) {
+                        dottedKey = true
+                        continue
+                    } else if ((item.isAsciiLetter() && item.isAsciiNumber()) || item == Symbols.UNDERLINE[0] || item == Symbols.DASHED[0]) {
+                        continue
+                    } else if (dottedKey && sl[i - 1] == Symbols.DOT[0] && (item == Symbols.QUOTE[0] || item == Symbols.SINGLE_QUOTE[0])) {
+                        openString = true
+                        openStrChar = item
+                        continue
+                    }
+                } else if (keyName == 2) {
+                    if (item.isAsciiWhiteSpace()) {
+                        if (dottedKey) {
+                            let nextItem: Char = sl[i + 1]
+                            if ((!nextItem.isAsciiWhiteSpace()) && nextItem != Symbols.DOT[0]) {
+                                keyName = 1
+                            }
+                        }
+                        continue
+                    }
+                    if (item == Symbols.DOT[0]) {
+                        dottedKey = true
+                        let nextItem: Char = sl[i + 1]
+                        if ((!nextItem.isAsciiWhiteSpace()) && nextItem != Symbols.DOT[0]) {
+                            keyName = 1
+                        }
+                        continue
+                    }
+                }
+                if (item == Symbols.EQUAL_SYMBOL[0]) {
+                    keyName = 0
+                    prevKey = key[..-1].rtrim()
                 }
             }
-            // Todo
-            // foo = "bar"
-            let keyMatcher: Matcher = Regex("[a-zA-Z0-9_-]+").matcher(leftValue)
-            keyMatcher.fullMatch().getOrThrow({ => TomlIllegalKeyException("Illegal toml key: the key is illegal")})
-            key.add(leftValue)
-
-            // Todo: 处理多行文本
-            // Todo：处理其他类型数据
-            // 处理整型数据
-            let value: Value = match(integerParser.asA(line)) {
-                case Ok(x) => x
-                case Err(_) => throw Exception("Not an integer")
-            }
-            
-            item.put(key, value)
-            // 处理布尔型数据
         }
-        
     }
 
     private func readData(): String {

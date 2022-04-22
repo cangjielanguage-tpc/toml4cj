@@ -7,7 +7,7 @@
 package enumerations
 
 public enum KeyType {
-    | Bare(String)
-    | Quote(String)
-    | Dot(String)
+    | Str
+    | Obj
+    | Arr
 }
