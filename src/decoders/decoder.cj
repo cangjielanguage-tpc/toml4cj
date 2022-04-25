@@ -316,13 +316,84 @@ public class Decoder {
                     let lineSize: Int64 = line.size()
                     closed = (line[lineSize - 1] == multilineStrStr[0] && line[lineSize - 2] == multilineStrStr[0] && line[lineSize - 3] == multilineStrStr[0])
                 }
-                if (closed) {
-                    try {
-                        // value, vtype = decoder.load_value(multilinestr)
-                    } catch(e: Exception) {
+                // if (closed) {
+                //     try {
+                //         // value, vtype = decoder.load_value(multilinestr)
+                //     } catch(e: Exception) {
                         
+                //     }
+                //     currentLevel
+                // }
+                // if closed:
+                //     try:
+                //         value, vtype = decoder.load_value(multilinestr)
+                //     except ValueError as err:
+                //         raise TomlDecodeError(str(err), original, pos)
+                //     currentlevel[multikey] = value
+                //     multikey = None
+                //     multilinestr = ""
+                // else:
+                //     k = len(multilinestr) - 1
+                //     while k > -1 and multilinestr[k] == '\\':
+                //         multibackslash = not multibackslash
+                //         k -= 1
+                //     if multibackslash:
+                //         multilinestr = multilinestr[:-1]
+                //     else:
+                //         multilinestr += "\n"
+                // }
+                continue
+            }
+            if(line[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                arrayOfTables = false
+                if (line.size() == 1) {
+                    throw TomlDecodeErrorException("Opening key group bracket on line by itself")
+                }
+                var splitStr: String = ""
+                if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                    arrayOfTables = true
+                    line = line[2..]
+                    splitStr = Symbols.LEFT_SQUARE_BRACKET * 2
+                } else {
+                    line = line[1..]
+                    splitStr = Symbols.LEFT_SQUARE_BRACKET
+                }
+                var i: Int64 = 1
+                var quotesplits: ArrayList<String> = ArrayList<String>()
+                // quotesplits = decoder._get_split_on_quotes(line)
+                var quoted: Bool = false
+                for(quoteSplit in quotesplits) {
+                    if (!quoted && 0 <= (quoteSplit.indexOf(splitStr) ?? -1)) {
+                        break
                     }
-                    // currentLevel
+                    i += quoteSplit.count(splitStr)
+                    quoted = !quoted
+                }
+                let lineSplited: Array<String> = line.split(splitStr, i)
+                if (lineSplited.size() < i + 1 || lineSplited[lineSplited.size() - 1].trim() != "") {
+                    throw TomlDecodeErrorException("Key group not on a line by itself.")
+                }
+                let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited[..lineSplited.size() - 1], delimiter: splitStr).split("."))
+                i = 0
+                while(i < groups.size()) {
+                    groups.set(i, groups[i].trim())
+                    if (groups[i].size() > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
+                        var groupStr: String = groups[i]
+                        var j: Int64 = i + 1
+                        while((groupStr[0] != groupStr[groupStr.size() - 1]) || groupStr.size() == 1){
+                            j += 1
+                            if (j > groups.size() + 2) {
+                                throw TomlDecodeErrorException("Invalid group name")
+                            }
+                            groupStr = String.join(Array<String>(groups)[i..j], delimiter: ".").trim()
+                        }
+                        groups.set(i, groupStr[1..groupStr.size() - 1])
+                        for (x in i + 1..j) {
+                            groups.removeAt(x)
+                        }
+                    } else {
+                        // if (!)
+                    }
                 }
             }
         }
