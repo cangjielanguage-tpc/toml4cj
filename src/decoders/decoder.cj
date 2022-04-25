@@ -66,21 +66,22 @@ public class Decoder {
 
     public func decode() {
         let implicitGroups: ArrayList<Any> = ArrayList<Any>()
-
+        // Todo: retval = decoder.get_empty_table()
+        // Todo: currentlevel = retval
         let original: String = readData()
         var sl: Array<Char> = original.toCharArray()
-        let openArr: Int64 = 0
+        var openArr: Int64 = 0
         var openString: Bool = false
         var openStrChar: Char = ""[0]
-        let multilineStr: Bool = false
-        let arrayOfTables: Bool = false
-        let beginLine: Bool = true
-        let keyGroup: Bool = false
+        var multilineStr: Bool = false
+        var arrayOfTables: Bool = false
+        var beginLine: Bool = true
+        var keyGroup: Bool = false
         var dottedKey: Bool = false
         var keyName: Int64 = 0
         var key: String = ""
         var prevKey: String = ""
-        let lineNo: Int64 = 1
+        var lineNo: Int64 = 1
 
         for (i in 0..sl.size()) {
             let item: Char = sl[i]
@@ -143,10 +144,196 @@ public class Decoder {
                 }
                 if (item == Symbols.EQUAL_SYMBOL[0]) {
                     keyName = 0
-                    prevKey = key[..-1].rtrim()
+                    prevKey = key[..key.size() - 1].trimRight()
+                    key = ""
+                    dottedKey = false
+                } else {
+                    throw TomlDecodeErrorException("Found invalid character in key name: '" + item + "'. Try quoting the key name.")
+                }
+                if (item == Symbols.SINGLE_QUOTE[0] && openStrChar != Symbols.QUOTE[0]) {
+                    var k: Int64 = 1
+                    try {
+                        while (sl[i - k] == Symbols.SINGLE_QUOTE[0]) {
+                            k += 1
+                            if (k == 3) {
+                                break
+                            }
+                        }
+                    } catch (e: IndexOutOfBoundsException) {
+
+                    }
+                    if (k == 3) {
+                        multilineStr = !multilineStr
+                        openString = multilineStr
+                    } else {
+                        openString = !openString
+                    } 
+                    if (openString) {
+                        openStrChar = Symbols.SINGLE_QUOTE[0]
+                    } else {
+                        openStrChar = ""[0]
+                    }
+                }
+                if (item == Symbols.QUOTE[0] && openStrChar != Symbols.SINGLE_QUOTE[0]) {
+                    var oddBackSlash: Bool = false
+                    var k: Int64 = 1
+                    var tripQuote: Bool = false
+                    try {
+                        while(sl[i - k] == Symbols.QUOTE[0]) {
+                            k += 1
+                            if (k == 3) {
+                                tripQuote = true
+                                break
+                            }
+                        }
+                        if (k == 1 || (k == 3 && tripQuote)) {
+                            while (sl[i - k] == Symbols.BACK_SLASH[0]) {
+                                oddBackSlash = !oddBackSlash
+                                k += 1
+                            }
+                        }
+                    } catch(e: IndexOutOfBoundsException) {
+
+                    }
+                    if (!oddBackSlash) {
+                        if (tripQuote) {
+                            multilineStr = !multilineStr
+                            openString = multilineStr
+                        } else {
+                            openString = !openString
+                        }
+                    }
+                    if (openString) {
+                        openStrChar = Symbols.QUOTE[0]
+                    } else {
+                        openStrChar = ""[0]
+                    }
+                }
+                if (item == Symbols.NUMBER_SIGN[0] && (!openString && !keyGroup && !arrayOfTables)) {
+                    var j: Int64 = 1
+                    var comment: String = ""
+                    try {
+                        while(sl[j] != Symbols.LF[0]) {
+                            comment += sl[j]
+                            sl[j] = Symbols.SPACE[0]
+                            j += 1
+                        }
+                    } catch(e: IndexOutOfBoundsException) {
+                        break
+                    }
+                    if (openArr == 0) {
+                        // Todo: decoder.preserve_comment(line_no, prev_key, comment, beginline)
+                    }
+                }
+                if (item == Symbols.LEFT_SQUARE_BRACKET[0] && (!openString && !keyGroup && !arrayOfTables)) {
+                    if (beginLine) {
+                        if (sl.size() > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                            arrayOfTables = true
+                        } else {
+                            keyGroup = true
+                        }
+                    } else {
+                        openArr += 1
+                    }
+                }
+                if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) {
+                    if (keyGroup) {
+                        keyGroup = false
+                    } else if (arrayOfTables) {
+                        if(sl[i - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]) {
+                            arrayOfTables = false
+                        }
+                    } else {
+                        openArr -= 1
+                    }
+                }
+                if (item == Symbols.LF[0]) {
+                    if (openString || multilineStr) {
+                        if (!multilineStr) {
+                            throw TomlDecodeErrorException("Unbalanced quotes")
+                        }
+                        if ((sl[i - 1] == Symbols.SINGLE_QUOTE[0] || sl[i - 1] == Symbols.QUOTE[0] ) && (sl[i - 2] == sl[i - 1])) {
+                            sl[i] == sl[i - 1]
+                            if(sl[i - 3] == sl[i - 1]) {
+                                sl[i - 3] = Symbols.SPACE[0]
+                            }
+                        }
+                    } else if (openArr != 0) {
+                        sl[i] = Symbols.SPACE[0]
+                    } else {
+                        beginLine = true
+                    }
+                    lineNo += 1
+                } else if (beginLine && sl[i] != Symbols.SPACE[0] && sl[i] != Symbols.HORIZONTAL_TAB[0]) {
+                    beginLine = false
+                    if (!keyGroup && !arrayOfTables) {
+                        if (sl[i] == Symbols.EQUAL_SYMBOL[0]) {
+                            throw TomlDecodeErrorException("Found empty keyname")
+                        }
+                        keyName = 1
+                        key += item
+                    }
                 }
             }
         }
+        if (keyName != 0) {
+            throw TomlDecodeErrorException("Key name found without value. Reached end of file.")
+        }
+        if (openString) {
+            // Reached EOF and have an unterminated string
+            throw TomlDecodeErrorException("Unterminated string found. Reached end of file.")
+        }
+        var s: String = joinChar(".", sl)
+        var ss: Array<String> = s.split(Symbols.LF)
+        var multiKey: Bool = false
+        var multilineStrStr: String = ""
+        var multiBackSlash: Bool = false
+        var pos: Int64 = 0
+        for (idx in 0..=ss.size()) {
+            var line: String = ss[idx]
+            if (idx > 0) {
+                pos += ss[idx - 1].size() + 1
+            }
+
+            // decoder.embed_comments(idx, currentLevel)
+            if (multilineStrStr.size() == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {
+                line = line.trim()
+            }
+            if (line.equals("") && (!multiKey || multiBackSlash)) {
+                continue
+            }
+            if (multiKey) {
+                if (multiBackSlash) {
+                    multilineStrStr += line
+                } else {
+                    multilineStrStr += line
+                }
+                multiBackSlash = false
+                var closed: Bool = false
+                if (multilineStrStr[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                    closed = line[line.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
+                } else if (line.size() > 2) {
+                    let lineSize: Int64 = line.size()
+                    closed = (line[lineSize - 1] == multilineStrStr[0] && line[lineSize - 2] == multilineStrStr[0] && line[lineSize - 3] == multilineStrStr[0])
+                }
+                if (closed) {
+                    try {
+                        // value, vtype = decoder.load_value(multilinestr)
+                    } catch(e: Exception) {
+                        
+                    }
+                    // currentLevel
+                }
+            }
+        }
+    }
+    
+    private func joinChar(delimiter: String, chars: Array<Char>): String {
+        var result: String = ""
+        for (c in chars) {
+            result += c.toString() + "."
+        }
+        result
     }
 
     private func readData(): String {
@@ -173,4 +360,8 @@ public class Decoder {
         }
         data
     }
+}
+
+class TomlDecoder {
+    func loadInlineObject(line: String, currentLevel)
 }
