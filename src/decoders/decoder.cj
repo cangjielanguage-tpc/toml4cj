@@ -28,9 +28,9 @@ public class Decoder {
     // static let mapParser: MapParser = MapParser()
     // static let stringParser: StringParser = StringParser()
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
+    let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
 
     public init() {
-
     }
 
     public init(payload: String) {
@@ -65,7 +65,7 @@ public class Decoder {
     }
 
     public func decode() {
-        let implicitGroups: ArrayList<Any> = ArrayList<Any>()
+        let implicitGroups: ArrayList<String> = ArrayList<String>()
         // Todo: retval = decoder.get_empty_table()
         // Todo: currentlevel = retval
         let original: String = readData()
@@ -392,11 +392,88 @@ public class Decoder {
                             groups.removeAt(x)
                         }
                     } else {
-                        // if (!)
+                        if (!match (groupNameRe.matches(groups[i])) {
+                            case Some(x) => true
+                            case None => false
+                        }) {
+                            throw TomlDecodeErrorException("Invalid group name")
+                        }
+                    }
+                    i += 1
+                }
+                // currentLevel = retVal
+                for(l in 0..groups.size()) {
+                    let group: String = groups[l]
+                    if ("".equals(group)) {
+                        throw TomlDecodeErrorException("Can't have a keygroup with an empty")
+                    }
+                    try {
+                        // currentLevel[group]
+                        if (l == groups.size() - 1) {
+                            if(arrayListContains(implicitGroups, group)) {
+                                implicitGroups.removeIf({item => item == group})
+                                if (arrayOfTables) {
+                                    throw TomlDecodeErrorException("An implicitly defined table can't be an array")
+                                }
+                            } else if (arrayOfTables) {
+                                // currentLevel[group].append(decoder.get_empty_table())
+                            } else {
+                                throw TomlDecodeErrorException("Group already exists")
+                            }
+                        }
+                    } catch(e: Exception) {
+                        // except TypeError:
+                        //     currentlevel = currentlevel[-1]
+                        //     if group not in currentlevel:
+                        //         currentlevel[group] = decoder.get_empty_table()
+                        //         if i == len(groups) - 1 and arrayoftables:
+                        //             currentlevel[group] = [decoder.get_empty_table()]
+                        // except KeyError:
+                        //     if i != len(groups) - 1:
+                        //         implicitgroups.append(group)
+                        //     currentlevel[group] = decoder.get_empty_table()
+                        //     if i == len(groups) - 1 and arrayoftables:
+                        //         currentlevel[group] = [decoder.get_empty_table()]
+                    }
+                    // currentLevel = currentLevel[group]
+                    if (arrayOfTables) {
+                        try {
+                            // currentLevel = currentLevel[currentLevel.size() - 1]
+                        } catch(e: Exception) {
+
+                        }
                     }
                 }
+            } else if (line[0] == Symbols.LEFT_BRACE[0]) {
+                if (line[line.size() - 1] != Symbols.RIGHT_BRACE[0]) {
+                    throw TomlDecodeErrorException("Line break are not allowed in inline objects")
+                }
+                try {
+                    // decoder.load_inline_object(line, currentLevel, multiKey, multiBackSlash)
+                } catch(e: Exception) {
+                    throw TomlDecodeErrorException("")
+                }
+            } else if (line.contains(Symbols.EQUAL_SYMBOL)) {
+                try {
+                    // ret = decoder.load_line(line, currentLevel, multiKey, multiBackSlash)
+                } catch(e: Exception) {
+                    throw TomlDecodeErrorException("")
+                }
+                // if (ret is not None) {
+                //     multiKey, multiLineStr, multiBackSlash = ret
+                // }
             }
         }
+        // return retval
+    }
+
+    private func arrayListContains<T>(al: ArrayList<T>, element: T) : Bool where T <: Equatable<T> {
+        for(item in al) {
+            if (item == element) {
+                return true
+            }
+        }
+        return false
     }
     
     private func joinChar(delimiter: String, chars: Array<Char>): String {
