@@ -12,7 +12,7 @@ from std import collection.*
 import exceptions.*
 from std import regex.*
 from std import unicode.*
-from std import serialization.*
+from serialization import serialization.*
 
 type element = HashMap<Key, Value>
 
@@ -389,7 +389,7 @@ public class Decoder {
                         }
                         groups.set(i, groupStr[1..groupStr.size() - 1])
                         for (x in i + 1..j) {
-                            groups.removeAt(x)
+                            groups.remove(x)
                         }
                     } else {
                         if (!match (groupNameRe.matches(groups[i])) {
@@ -510,6 +510,6 @@ public class Decoder {
     }
 }
 
-class TomlDecoder {
-    func loadInlineObject(line: String, currentLevel)
-}
+// class TomlDecoder {
+    // func loadInlineObject(line: String, currentLevel)
+// }

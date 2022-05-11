@@ -6,7 +6,7 @@
 
 import decoders.*
 
-func main() {
+main() {
     let decoder: Decoder = Decoder()
     decoder.load("res/example.toml")
     decoder.decode()

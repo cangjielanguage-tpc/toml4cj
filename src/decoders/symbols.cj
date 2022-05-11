@@ -14,4 +14,10 @@ public class Symbols {
     static public let DOT: String = String.fromUtf8([0x2E])
     static public let UNDERLINE: String = String.fromUtf8([0x5F])
     static public let DASHED: String = String.fromUtf8([0x2D])
+    static public let BACK_SLASH: String = String.fromUtf8([0x5C])
+    static public let SPACE: String = String.fromUtf8([0x20])
+    static public let RIGHT_SQUARE_BRACKET: String = String.fromUtf8([0x5D])
+    static public let HORIZONTAL_TAB: String = String.fromUtf8([0x0B])
+    static public let LEFT_BRACE: String = String.fromUtf8([0x7B])
+    static public let RIGHT_BRACE: String = String.fromUtf8([0x7D])
 }
