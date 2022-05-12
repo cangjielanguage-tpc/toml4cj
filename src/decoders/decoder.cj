@@ -510,6 +510,56 @@ public class Decoder {
     }
 }
 
-// class TomlDecoder {
-    // func loadInlineObject(line: String, currentLevel)
-// }
+class TomlDecoder {
+    func loadInlineObject(line: String) {
+        let candidateGroups: ArrayList<String> = ArrayList<String>(line[1..line.size() - 1].split(','))
+        let groups: ArrayList<String> = ArrayList<String>()
+
+        if (candidateGroups.size() == 1 && candidateGroups[0].trim().size() != 0) {
+            candidateGroups.remove(candidateGroups.size() - 1)
+        }
+        while(candidateGroups.size() > 0) {
+            let candidateGroup: String = candidateGroups[0]
+            candidateGroups.remove(0)
+            if (-1 == (candidateGroup.indexOf(Symbols.EQUAL_SYMBOL[0]) ?? -1)) {
+                throw Exception("Invalid inline table value encountered")
+            }
+            let keyValues: Array<String> = candidateGroup.split(Symbols.EQUAL_SYMBOL[0], 2)
+            let key: String = keyValues[0]
+            var value: String = keyValues[1]
+            value = value.trim()
+            if ((value[0] == value[value.size() - 1]) && [Symbols.QUOTE[0], Symbols.SINGLE_QUOTE[0]].contains(value[0]) || (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].contains(value[0]) || ["value", "false"].contains(value) || (value[0] == Symbols.LEFT_SQUARE_BRACKET[0] && value[value.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]) || (value[0] == Symbols.LEFT_BRACE[0] && value[value.size() - 1] == Symbols.RIGHT_BRACE[0]))) {
+                groups.append(candidateGroup)
+            } else if (candidateGroups.size() > 0) {
+                candidateGroups[0] = candidateGroup + "," + candidateGroups[0]
+            } else {
+                throw Exception("Invalid inline table value encountered")
+            }
+        }
+
+        for (group in groups) {
+            // status = self.load_line(group, currentlevel, multikey, multibackslash)
+            // if status is not None:
+            //     break
+        }
+    }
+
+
+    private func getSplitOnQuotes(line: String) {
+        var doubleQuoteSplits: Array<String> = line.split(Symbols.QUOTE[0])
+        let quoted: Bool = false
+        let quoteSplits: Array<String> = []
+        if (doubleQuoteSplits.size() > 1 && doubleQuoteSplits[0].contains(Symbols.SINGLE_QUOTE[0])) {
+            var singleQuoteSplits: Array<String> = doubleQuoteSplits[0].split(Symbols.SINGLE_QUOTE[0])
+            doubleQuoteSplits = doubleQuoteSplits[1..]
+            while(singleQuoteSplits.size() % 2 == 0 && doubleQuoteSplits.size() != 0) {
+                singleQuoteSplits[singleQuoteSplits.size() - 1] += Symbols.QUOTE + doubleQuoteSplits[0]
+                doubleQuoteSplits = doubleQuoteSplits[1..]
+
+                if (singleQuoteSplits[singleQuoteSplits.size() - 1].contains(Symbols.SINGLE_QUOTE[0])) {
+                    // singleQuoteSplits = singleQuoteSplits[..singleQuoteSplits.size() - 1] + singleQuoteSplits[singleQuoteSplits.size() - 1].split(Symbols.SINGLE_QUOTE[0])
+                }
+            }
+        }
+    }
+}
