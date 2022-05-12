@@ -545,21 +545,32 @@ class TomlDecoder {
     }
 
 
-    private func getSplitOnQuotes(line: String) {
+    private func getSplitOnQuotes(line: String): Array<String> {
         var doubleQuoteSplits: Array<String> = line.split(Symbols.QUOTE[0])
-        let quoted: Bool = false
-        let quoteSplits: Array<String> = []
+        var quoted: Bool = false
+        let quoteSplits: ArrayList<String> = ArrayList<String>([])
         if (doubleQuoteSplits.size() > 1 && doubleQuoteSplits[0].contains(Symbols.SINGLE_QUOTE[0])) {
-            var singleQuoteSplits: Array<String> = doubleQuoteSplits[0].split(Symbols.SINGLE_QUOTE[0])
+            var singleQuoteSplits: ArrayList<String> = ArrayList<String>(doubleQuoteSplits[0].split(Symbols.SINGLE_QUOTE[0]))
             doubleQuoteSplits = doubleQuoteSplits[1..]
             while(singleQuoteSplits.size() % 2 == 0 && doubleQuoteSplits.size() != 0) {
                 singleQuoteSplits[singleQuoteSplits.size() - 1] += Symbols.QUOTE + doubleQuoteSplits[0]
                 doubleQuoteSplits = doubleQuoteSplits[1..]
 
                 if (singleQuoteSplits[singleQuoteSplits.size() - 1].contains(Symbols.SINGLE_QUOTE[0])) {
-                    // singleQuoteSplits = singleQuoteSplits[..singleQuoteSplits.size() - 1] + singleQuoteSplits[singleQuoteSplits.size() - 1].split(Symbols.SINGLE_QUOTE[0])
+                    singleQuoteSplits.appendAll(singleQuoteSplits[..singleQuoteSplits.size() - 1])
+                    singleQuoteSplits.appendAll(singleQuoteSplits[singleQuoteSplits.size() - 1].split(Symbols.SINGLE_QUOTE[0]))
                 }
             }
+            quoteSplits.appendAll(singleQuoteSplits)
         }
+        for (doubleQuoteSplit in doubleQuoteSplits) {
+            if (quoted) {
+                quoteSplits.append(doubleQuoteSplit)
+            } else {
+                quoteSplits.appendAll(doubleQuoteSplit.split(Symbols.SINGLE_QUOTE[0]))
+                quoted = !quoted
+            }
+        }
+        Array<String>(quoteSplits)
     }
 }
