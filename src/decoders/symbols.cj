@@ -21,4 +21,5 @@ public class Symbols {
     static public let HORIZONTAL_TAB: String = String.fromUtf8([0x09]) // \t
     static public let LEFT_BRACE: String = String.fromUtf8([0x7B]) // {
     static public let RIGHT_BRACE: String = String.fromUtf8([0x7D]) // }
+    static public let PLUS: String = String.fromUtf8([0x2B]) // +
 }

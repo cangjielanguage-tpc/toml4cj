@@ -13,6 +13,8 @@ import exceptions.*
 from std import regex.*
 from std import unicode.*
 from serialization import serialization.*
+from std import convert.*
+from std import time.*
 
 type element = HashMap<Key, Value>
 
@@ -511,6 +513,9 @@ public class Decoder {
 }
 
 class TomlDecoder {
+    private static let numberWithUnderScores: Regex = Regex("([0-9])(_([0-9]))*")
+
+
     func loadInlineObject(line: String) {
         let candidateGroups: ArrayList<String> = ArrayList<String>(line[1..line.size() - 1].split(','))
         let groups: ArrayList<String> = ArrayList<String>()
@@ -572,5 +577,137 @@ class TomlDecoder {
             }
         }
         Array<String>(quoteSplits)
+    }
+
+    func loadLine(line: String) {
+        var i: Int64 = 1
+        let quoteSplits: Array<String> = getSplitOnQuotes(line)
+        var quoted: Bool = false
+        for (quoteSplit in quoteSplits) {
+            if (!quoted && -1 != (quoteSplit.indexOf(Symbols.EQUAL_SYMBOL[0]) ?? -1)) {
+                break
+            }
+            i += quoteSplit.count(Symbols.EQUAL_SYMBOL[0])
+            quoted = !quoted
+        }
+        var pair: Array<String> = line.split(Symbols.EQUAL_SYMBOL, i)
+        let strictlyValid: Bool = strictlyValidNum(pair[pair.size() - 1])
+        let matchResult: ?MatchData = TomlDecoder.numberWithUnderScores.matcher(pair[pair.size() - 1]).matchStart()
+        match(matchResult) {
+            case Some(x: MatchData) => pair[pair.size() - 1] = pair[pair.size() - 1].replace(Symbols.UNDERLINE, "");
+            case _ => ()
+        }
+        while(0 != pair[pair.size() - 1].size() && (
+            pair[pair.size() - 1][0] != ' ' && pair[pair.size() - 1][0] != Symbols.HORIZONTAL_TAB[0] && 
+            pair[pair.size() - 1][0] != Symbols.SINGLE_QUOTE[0] && pair[pair.size() - 1][0] != Symbols.QUOTE[0] && 
+            pair[pair.size() - 1][0] != Symbols.LEFT_SQUARE_BRACKET[0] && pair[pair.size() - 1][0] != Symbols.LEFT_BRACE[0] && 
+            pair[pair.size() - 1].trim() != "true" && pair[pair.size() - 1].trim() != "false"
+        )) {
+            match (parseFloat64(pair[pair.size() - 1])) {
+                case Some(x) => break
+                case None => ()
+            }
+            
+        }
+    }
+
+    private func strictlyValidNum(n: String): Bool {
+        var m: String = n.trim()
+        if (m.size() != 0) {
+            return false
+        }
+        if (m[0] == Symbols.DASHED[0]) {
+            return false
+        }
+        if (m[m.size() - 1] == Symbols.UNDERLINE[0]) {
+            return false
+        }
+        if (-1 != (m.indexOf("_.") ?? -1) || -1 != (m.indexOf("._") ?? -1)) {
+            return false
+        }
+        if (m.size() == 1) {
+            return true
+        }
+        if (m[0] == '0' && -1 == (".obx".indexOf(m[1]) ?? -1)) {
+            return false
+        }
+        if (m[0] == Symbols.PLUS[0] || m[0] == Symbols.DASHED[0]) {
+            m = m[1..]
+            if (m.size() > 1 && m[0] != '0' && m[1] != Symbols.DOT[0]) {
+                return false
+            }
+        }
+        if (-1 != (m.indexOf(Symbols.UNDERLINE * 3) ?? -1)) {
+            return false
+        }
+        return true
+    }
+
+    private func loadDate(val: String) {
+        var microSecond: Int64 = 0
+        var tz: ?TomlTz = None
+        var subSecondVal: String
+        var subSecondValAndTz: String
+        var tzVal: ?String
+        try {
+            if (val.size() > 19) {
+                if (val[19] == Symbols.DOT[0]) {
+                    if ('Z' == val[val.size() - 1].toAsciiUpperCase()) {
+                        subSecondVal = val[20..val.size() - 1]
+                        tzVal = Some("Z")
+                    } else {
+                        subSecondValAndTz = val[20..]
+                        let splitPoint: Int64
+                        if (-1 != (subSecondValAndTz.indexOf(Symbols.PLUS[0]) ?? -1)) {
+                            splitPoint = subSecondValAndTz.indexOf(Symbols.PLUS[0]) ?? -1 // The splitPoint never be -1
+                            subSecondVal = subSecondValAndTz[..splitPoint]
+                            tzVal = Some(subSecondValAndTz[splitPoint..])
+                        } else if (-1 != (subSecondValAndTz.indexOf(Symbols.DASHED[0]) ?? -1)) {
+                            splitPoint = subSecondValAndTz.indexOf(Symbols.DASHED[0]) ?? -1
+                            subSecondVal = subSecondValAndTz[..splitPoint]
+                            tzVal = Some(subSecondValAndTz[splitPoint..])
+                        } else {
+                            tzVal = None
+                            subSecondVal = subSecondValAndTz
+                        }
+                    }
+                    match(tzVal) {
+                        case Some(x) => tz = TomlTz(x)
+                        case None => ()
+                    }
+                    let subSecondValInt: Int64 = parseInt64(subSecondVal).getOrThrow()
+                    microSecond = subSecondValInt * (10 ** (6 - subSecondVal.size()))
+                } else {
+                    tz = Some(TomlTz(val[19..]))
+                }
+            }
+        } catch(e: Exception) {
+            
+        }
+        if (-1 != (val[1..].indexOf(Symbols.DASHED[0]) ?? -1)) {
+            
+        }
+        let d: Time
+        try {
+            let year: Int64 = parseInt64(val[..4]).getOrThrow()
+            let monthInt: Int64 = parseInt64(val[5..7]).getOrThrow()
+            let day: Int64 = parseInt64(val[8..10]).getOrThrow()
+            let month: Month = Month.of(monthInt).getOrThrow()
+            if (val.size() == 10) {
+                d = Time(year, month, day)
+            } else {
+                let hour: Int64 = parseInt64(val[11..13]).getOrThrow()
+                let minute: Int64 = parseInt64(val[14..16]).getOrThrow()
+                let second: Int64 = parseInt64(val[17..19]).getOrThrow()
+                match(tz) {
+                    case Some(x) => d = Time(year, month, day, hour: hour, min: minute, sec: second, nsec: microSecond * Int64(1e6), loc: x.location())
+                    case None => throw Exception("The timezone is invalid")
+                }
+                
+            }
+        } catch(e: Exception) {
+
+        }
+        d
     }
 }
