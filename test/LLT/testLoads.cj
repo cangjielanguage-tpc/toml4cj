@@ -1,12 +1,10 @@
-// DEPENDENCE integer002.toml
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
 from toml import decoders.*
 
 main() {
-    let decoder: Decoder = Decoder()
-    decoder.load("integer002.toml")
+    let decoder: Decoder = Decoder("[bool]\r\nbool1 = true")
+    decoder.loads("[bool]\r\nbool1 = true")
     decoder.decode()
-
 }

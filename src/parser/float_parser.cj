@@ -10,7 +10,7 @@ package parser
 
 /**
  * The class is FloarParser inherited from Parsable
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class FloarParser <: Parsable {

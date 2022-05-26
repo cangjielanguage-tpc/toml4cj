@@ -12,7 +12,7 @@ import exceptions.TomlIllegalKeyException
 
 /**
  * The class is KeyParser
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class KeyParser {

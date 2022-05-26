@@ -12,7 +12,7 @@ from std import unicode.*
 
 /**
  * The class is Key inherited from ToString & Hashable & Equatable<Key>
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class Key <: ToString & Hashable & Equatable<Key> {

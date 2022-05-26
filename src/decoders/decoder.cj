@@ -25,7 +25,7 @@ type element = HashMap<Key, Value>
 
 /**
  * The class is Decoder
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class Decoder {
@@ -563,7 +563,7 @@ public class Decoder {
 
 /*
  * The class is TomlDecoder
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 class TomlDecoder {

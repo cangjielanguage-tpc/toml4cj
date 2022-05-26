@@ -1,0 +1,20 @@
+// DEPENDENCE: keys001.toml
+// DEPENDENCE: keys002.toml
+// EXEC: cjc %import-path %L %l %f
+// EXEC: ./main
+
+from toml import decoders.*
+from std import os.posix.*
+
+main() {
+    var path2: String = getcwd()
+    var arr: Array<String> = [
+        "${path2}/keys001.toml" ,
+        "${path2}/keys002.toml"
+    ]
+    let decoder: Decoder = Decoder()
+    for(i in 0..arr.size()) {
+        decoder.load(arr[i])
+        decoder.decode()
+    }
+}

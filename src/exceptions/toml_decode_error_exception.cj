@@ -10,7 +10,7 @@ package exceptions
 
 /**
  * The class is TomlDecodeErrorException inherited from TomlBaseException
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class TomlDecodeErrorException <: TomlBaseException {
