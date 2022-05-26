@@ -10,7 +10,7 @@ package parser
 
 /**
  * The class is BooleanParser inherited from Parsable
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class BooleanParser <: Parsable {

@@ -12,7 +12,7 @@ from std import math.*
 
 /**
  * The class is Utils
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class Utils {

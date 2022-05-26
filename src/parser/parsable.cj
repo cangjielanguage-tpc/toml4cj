@@ -13,7 +13,7 @@ import enumerations.Value
 
 /**
  * The interface is ic interface Parsable
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public interface Parsable {

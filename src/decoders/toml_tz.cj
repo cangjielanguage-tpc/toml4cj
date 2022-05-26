@@ -14,7 +14,7 @@ from std import time.Duration
 
 /**
  * The class is TomlTz
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class TomlTz {

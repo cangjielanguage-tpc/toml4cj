@@ -11,7 +11,7 @@ package exceptions
 
 /**
  * The class is TomlIllegalKeyException inherited from TomlBaseException
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class TomlIllegalKeyException <: TomlBaseException {

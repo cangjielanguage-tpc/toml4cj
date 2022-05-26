@@ -11,7 +11,7 @@ package exceptions
 
 /**
  * The class is TomlBaseException inherited from Exception
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public open class TomlBaseException <: Exception {

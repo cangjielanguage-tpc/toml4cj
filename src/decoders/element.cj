@@ -12,7 +12,7 @@ from std import unicode.*
 
 /**
  * The class is Element
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class Element {

@@ -14,7 +14,7 @@ from std import convert.*
 
 /**
  * The class is IntegerParser inherited from Parsable
- * @author @Annlix
+ * @author Annlix
  * @since 0.28.4
  */
 public class IntegerParser <: Parsable {
