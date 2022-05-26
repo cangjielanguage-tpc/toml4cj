@@ -6,10 +6,12 @@
 
 package decoders
 
-from std import io.*
-import enumerations.*
-from std import collection.*
 import exceptions.*
+import enumerations.*
+import parser.*
+
+from std import io.*
+from std import collection.*
 from std import regex.*
 from std import unicode.*
 from serialization import serialization.*
@@ -22,10 +24,10 @@ public class Decoder {
     var stream: Option<Stream> = None
     var data: Option<String> = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
-    // static let booleanParser: BooleanParser = BooleanParser()
+    static let booleanParser: BooleanParser = BooleanParser()
+    static let integerParser: IntegerParser = IntegerParser()
     // static let dateTimeParser: DateTimeParser = DateTimeParser()
     // static let floatParser: FloatParser = FloatParser()
-    // static let integerParser: IntegerParser = IntegerParser()
     // static let listParser: ListParser = ListParser()
     // static let mapParser: MapParser = MapParser()
     // static let stringParser: StringParser = StringParser()
@@ -74,7 +76,7 @@ public class Decoder {
         var sl: Array<Char> = original.toCharArray()
         var openArr: Int64 = 0
         var openString: Bool = false
-        var openStrChar: Char = ""[0]
+        var openStrChar: Char = '0'
         var multilineStr: Bool = false
         var arrayOfTables: Bool = false
         var beginLine: Bool = true
@@ -107,7 +109,7 @@ public class Decoder {
                         if (!oddBackSlash) {
                             keyName = 2
                             openString = false
-                            openStrChar = ""[0]
+                            openStrChar = '0'
                         }
                     }
                     continue
@@ -173,7 +175,7 @@ public class Decoder {
                     if (openString) {
                         openStrChar = Symbols.SINGLE_QUOTE[0]
                     } else {
-                        openStrChar = ""[0]
+                        openStrChar = '0'
                     }
                 }
                 if (item == Symbols.QUOTE[0] && openStrChar != Symbols.SINGLE_QUOTE[0]) {
@@ -208,7 +210,7 @@ public class Decoder {
                     if (openString) {
                         openStrChar = Symbols.QUOTE[0]
                     } else {
-                        openStrChar = ""[0]
+                        openStrChar = '0'
                     }
                 }
                 if (item == Symbols.NUMBER_SIGN[0] && (!openString && !keyGroup && !arrayOfTables)) {

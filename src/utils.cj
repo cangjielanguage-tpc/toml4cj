@@ -30,7 +30,7 @@ public class Utils {
      * @return: String - 上述列出的符号中间包含的字符串。
      */
     public static func getQuoteValue(payload: String): String {
-        let line: String = payload.trim()
+        let line: String = payload.trimAscii()
         let prefix: String
         let firstChar: Char = line.charAt(0)
         let innerValue: StringBuilder = StringBuilder()

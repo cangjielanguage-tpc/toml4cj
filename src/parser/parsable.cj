@@ -4,7 +4,7 @@
  * Description:
  */
 
-package decoders.parsers
+package parser
 
 import enumerations.Value
 
