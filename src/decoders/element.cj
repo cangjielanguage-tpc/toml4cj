@@ -1,14 +1,42 @@
+/*
+ * Copyright (c) Cangjie Library Team 2022-2022. All rights resvered.
+ */
+
+/**
+ * @file
+ * This file is about parse element
+ */
 package decoders
 
 from std import unicode.* 
 
+/**
+ * The class is Element
+ * @author @Annlix
+ * @since 0.28.4
+ */
 public class Element {
     let lines: Array<String>
 
+    /*
+     * The Function is init constructor
+     *
+     * @param lines of Array<String>
+     *
+     * @since 0.28.4
+     */
     init(lines: Array<String>) {
         this.lines = lines
     }
 
+    /**
+     * The Function is parse
+     *
+     * @param sep of String
+     *
+     * @return Type of HashMap<String, Array<Byte>>
+     * @since 0.28.4
+     */
     public func parse(sep: String): HashMap<String, Array<Byte>> {
         let docMap: HashMap<String, Array<Byte>> = HashMap<String, Array<Byte>>() 
         let lineCount: Int64 = lines.size()
@@ -18,7 +46,7 @@ public class Element {
             var value: String = ""
             var line: String = lines[lineNo]
             let equalSignIndex: Int64 = line.indexOf(Symbols.EQUAL_SYMBOL) ?? -1
-            // 判断是否是注释
+            // Judge whether it is a comment
             if (line.trim().charAt(0) == Symbols.NUMBER_SIGN.charAt(0)) {
                 lineNo+=1
                 continue
@@ -38,26 +66,26 @@ public class Element {
                 leftValue = line.substring(0, equalSignIndex)
                 rightValue = line.substring(equalSignIndex + 1)
             } else {
-                // 表或表数组
+                // Table or table array
             }
-            // 多行文本
+            // Multiline text
             if (0 < (line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0)) {
                 // Todo: need to optimize
-                // 如果多行文本的左边第一个非空白是等号则是多行文本
+                // If the first non blank space on the left of multiline text is an equal sign, it is multiline text
                 let tripleQuoteIndex: Int64 = line.indexOf(Symbols.TRIPLE_QUOTE) ?? 0
-                // 获取当前行的第一个等号
+                // Gets the first equal sign of the current row
                 let equalSignIndex: Int64 = line.indexOf(Symbols.EQUAL_SYMBOL) ?? 0
                 key = line.substring(0, equalSignIndex - 1).trim()
-                // 查找当前行的末尾是否有多行文本结束标记
+                // Finds whether there is a multiline text end tag at the end of the current line
                 let lastTripleQuoteIndex = line.lastIndexOf(Symbols.TRIPLE_QUOTE) ?? -1
                 let valueStartAt: Int64 = tripleQuoteIndex + Symbols.TRIPLE_QUOTE.size()
                 if (lastTripleQuoteIndex > tripleQuoteIndex) {
-                    // 在当前行中结束了多行文本
+                    // Ends multiple lines of text in the current line
                     value = line.substring(valueStartAt, lastTripleQuoteIndex - valueStartAt)
                 } else {
-                    // 在当前行没有找到多行文本
+                    // No multiline text found on current line
                     value += (line.substring(valueStartAt) + appendNewline(line, sep))
-                    // 继续往下寻找
+                    // Keep looking
                     while (true) {
                         lineNo += 1
                         line = lines[lineNo]
@@ -72,21 +100,21 @@ public class Element {
                 }
                 // let subStr: String = line.substring(equalSignIndex + 1, (tripleQuoteIndex - equalSignIndex - 1))
                 // if (subStr.isBlank()) {
-                //     // 多行文本
-                //     // 寻找下一个"""的位置
+                //     // Multiline text
+                //     // Looking for the next """ position
                 //     let removeBlank: Bool = true
                 //     var start: Int64 = tripleQuoteIndex + 3
 
                 //     while (true) {
                 //         let lastTripleQuoteIndex = line.lastIndexOf(Symbols.TRIPLE_QUOTE) ?? -1
                 //         if (lastTripleQuoteIndex > tripleQuoteIndex || lastTripleQuoteIndex == 0) {
-                //             // 在当前行找到了结束符号
+                //             // An end symbol was found on the current line
                 //             let length = if (start == 0) {0} else {lastTripleQuoteIndex - start - 1}
                 //             start = if (start == 0) {0} else {start + 1}
                 //             value += line.substring(start + 1, length)
                 //             break
                 //         } else {
-                //             // 在当前行没有找到结束符号
+                //             // No end symbol found on current line
                 //             value += line.substring(start)
                 //             start = 0
                 //             lineNo += 1
@@ -98,18 +126,27 @@ public class Element {
                 lineNo += 1
             }
             lineNo += 1
-            // Todo: 整型
+            // Todo: integer
             // if (!rightValue.isEmpty() && rightValue.trim())
-            // Todo: 浮点型
-            // Todo: 布尔型
-            // Todo: 日期时间
-            // Todo: 单行文本
-            // Todo: 数组
-            // Todo: 表
+            // Todo: float
+            // Todo: Boolean
+            // Todo: Date time
+            // Todo: Single line text
+            // Todo: array
+            // Todo: list
         }
         docMap
     }
 
+    /*
+     * The Function is appendNewline
+     *
+     * @param line of String
+     * @param sep of String
+     *
+     * @return Type of String
+     * @since 0.28.4
+     */
     private func appendNewline(line: String, sep: String): String {
         if (line.trimAsciiRight().endsWith("\\")) {
             ""

@@ -1,8 +1,29 @@
+/*
+ * Copyright (c) Cangjie Library Team 2022-2022. All rights resvered.
+ */
+
+/**
+ * @file
+ * This file is about comment function
+ */
 from std import regex.*
 from std import collection.*
 from std import math.*
 
+/**
+ * The class is Utils
+ * @author @Annlix
+ * @since 0.28.4
+ */
 public class Utils {
+    /**
+     * The Function is isInteger
+     *
+     * @param s of String
+     *
+     * @return Type of Bool
+     * @since 0.28.4
+     */
     public static func isInteger(s: String): Bool {
         let reg = Regex("^(\\-|\\+)?\\d+$")
         let matcher = Matcher(reg, s)
@@ -13,8 +34,8 @@ public class Utils {
     }
 
     /**
-     * @summary: 提取双引号（"）、单引号（'）、三重双引号（"""）、三重单引号（'''）中间包含的字符串
-     * @description: 如：
+     * @summary: Extract double quotes(")、Single quotation mark(')、Triple double quotation mark(""")、Triple single quotation mark(''')String contained in the middle
+     * @description: as:
      *     let s1: String = String.fromUtf8([0x22, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x22]) // "foobar"
      *     getQuoteValue(s1) // foobar
      *     let s2: String = String.fromUtf8([0x27, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x27]) // 'foobar'
@@ -24,10 +45,12 @@ public class Utils {
      *     let s4: String = String.fromUtf8([0x27, 0x27, 0x27, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72, 0x27, 0x27, 0x27]) // '''foobar'''
      *     getQuoteValue(s4) // foobar
      *
-     * @todo: 字符串中含有转义引号的时候，该函数无法正常获取结果
+     * @todo: When the string contains escape quotation marks, the function cannot get the result normally
      * @author: Annlix<Annlix@outlook.com>
-     * @params: payload: String - 原始字符串
-     * @return: String - 上述列出的符号中间包含的字符串。
+     * @params: payload: String - Original string
+     *
+     * @return: String - The string contained between the symbols listed above.
+     * @since 0.28.4
      */
     public static func getQuoteValue(payload: String): String {
         let line: String = payload.trimAscii()

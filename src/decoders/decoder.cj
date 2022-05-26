@@ -1,7 +1,10 @@
 /*
- * Copyright (c) Cangjie Community 2022-2022. All rights reserved.
- * Note: This software have been NOT specify lincense.
- * Description:
+ * Copyright (c) Cangjie Library Team 2022-2022. All rights resvered.
+ */
+
+/**
+ * @file
+ * This file is about Decoding various data types
  */
 
 package decoders
@@ -20,12 +23,17 @@ from std import time.*
 
 type element = HashMap<Key, Value>
 
+/**
+ * The class is Decoder
+ * @author @Annlix
+ * @since 0.28.4
+ */
 public class Decoder {
     var stream: Option<Stream> = None
     var data: Option<String> = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
-    static let booleanParser: BooleanParser = BooleanParser()
-    static let integerParser: IntegerParser = IntegerParser()
+    //static let booleanParser: BooleanParser = BooleanParser()
+    //static let integerParser: IntegerParser = IntegerParser()
     // static let dateTimeParser: DateTimeParser = DateTimeParser()
     // static let floatParser: FloatParser = FloatParser()
     // static let listParser: ListParser = ListParser()
@@ -34,18 +42,44 @@ public class Decoder {
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
     let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
 
+    /**
+     * The Function is init constructor
+     *
+     * @since 0.28.4
+     */
     public init() {
     }
 
+    /**
+     * The Function is init constructor
+     *
+     * @param payload of String
+     *
+     * @since 0.28.4
+     */
     public init(payload: String) {
         mode = DecodeMode.STRING
         data = Some(payload)
     }
 
+    /**
+     * The Function is load
+     *
+     * @param pn of String, file path
+     *
+     * @since 0.28.4
+     */
     public func load(pn: String) {
         load(FileStream(pn))
     }
 
+    /**
+     * The Function is load
+     *
+     * @param file of FileStream
+     *
+     * @since 0.28.4
+     */
     public func load(file: FileStream) {
         match(data) {
             case Some(x) => throw Exception("Can't use string decode and stream decode at the same time")
@@ -59,6 +93,13 @@ public class Decoder {
         stream = Some(file)
     }
 
+    /**
+     * The Function is loads
+     *
+     * @param payload of String
+     *
+     * @since 0.28.4
+     */
     public func loads(payload: String) {
         match(stream) {
             case Some(x) => throw Exception("Can't use string decode and stream decode at the same time")
@@ -68,6 +109,11 @@ public class Decoder {
         data = Some(payload)
     }
 
+    /**
+     * The Function is decode
+     *
+     * @since 0.28.4
+     */
     public func decode() {
         let implicitGroups: ArrayList<String> = ArrayList<String>()
         // Todo: retval = decoder.get_empty_table()
@@ -146,6 +192,7 @@ public class Decoder {
                         continue
                     }
                 }
+                
                 if (item == Symbols.EQUAL_SYMBOL[0]) {
                     keyName = 0
                     prevKey = key[..key.size() - 1].trimRight()
@@ -197,7 +244,7 @@ public class Decoder {
                             }
                         }
                     } catch(e: IndexOutOfBoundsException) {
-
+                        
                     }
                     if (!oddBackSlash) {
                         if (tripQuote) {
@@ -510,10 +557,15 @@ public class Decoder {
                            }
             case _ => throw Exception("Must specify the data source first")
         }
-        data
+        data   
     }
 }
 
+/*
+ * The class is TomlDecoder
+ * @author @Annlix
+ * @since 0.28.4
+ */
 class TomlDecoder {
     private static let numberWithUnderScores: Regex = Regex("([0-9])(_([0-9]))*")
 

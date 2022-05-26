@@ -1,7 +1,10 @@
 /*
- * Copyright (c) Cangjie Community 2022-2022. All rights reserved.
- * Note: This software have been NOT specify lincense.
- * Description:
+ * Copyright (c) Cangjie Library Team 2022-2022. All rights resvered.
+ */
+
+/**
+ * @file
+ * This file is about Symbols
  */
 
 package decoders
@@ -9,7 +12,11 @@ package decoders
 from std import convert.*
 from std import time.Duration
 
-
+/**
+ * The class is TomlTz
+ * @author @Annlix
+ * @since 0.28.4
+ */
 public class TomlTz {
     private let rawOffset: String
     private let sign: Int64

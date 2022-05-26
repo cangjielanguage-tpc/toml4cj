@@ -1,17 +1,20 @@
 /*
- * Copyright (c) Cangjie Community 2022-2022. All rights reserved.
- * Note: This software have been NOT specify lincense.
- * Description:
+ * Copyright (c) Cangjie Library Team 2022-2022. All rights resvered.
  */
 
+/**
+ * @file
+ * This file is about interface Parsable
+ */
+ 
 package parser
 
 import enumerations.Value
 
 /**
- * parser 抽象类
- *
- * @description: SubParser需要继承该抽象类
+ * The interface is ic interface Parsable
+ * @author @Annlix
+ * @since 0.28.4
  */
 public interface Parsable {
     func asA(line: String): Result<Value>
