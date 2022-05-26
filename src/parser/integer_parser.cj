@@ -4,9 +4,12 @@
  * Description:
  */
 
-package decoders.parsers
+package parser
 
-public class BooleanParser <: Parsable {
+from std import regex.*
+from std import convert.*
+
+public class IntegerParser <: Parsable {
     public func asA(line: String): Result<Value> {
         var rightValue: String = line.split("=", 2, removeEmpty: true)[1]
         let numberSignIndex = rightValue.indexOf("#") ?? -1
@@ -17,12 +20,10 @@ public class BooleanParser <: Parsable {
             rightValue = rightValue.substring(0, numberSignIndex)
         }
         
-        if (rightValue.equals("true")) {
-            Ok(Value.Boolean(false))
-        } else if(rightValue.equals("false")) {
-            Ok(Value.Boolean(false))
-        } else {
-            Err(Exception("Maybe a string"))
+        match(parseInt64(rightValue)) {
+            case Some(x) => Ok(Value.Integer(x))
+            case None => Err(Exception("Not a integer"))
         }
     }
+
 }

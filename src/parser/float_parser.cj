@@ -4,12 +4,9 @@
  * Description:
  */
 
-package decoders.parsers
+package parser
 
-from std import regex.*
-from std import convert.*
-
-public class IntegerParser <: Parsable {
+public class FloarParser <: Parsable {
     public func asA(line: String): Result<Value> {
         var rightValue: String = line.split("=", 2, removeEmpty: true)[1]
         let numberSignIndex = rightValue.indexOf("#") ?? -1
@@ -20,10 +17,9 @@ public class IntegerParser <: Parsable {
             rightValue = rightValue.substring(0, numberSignIndex)
         }
         
-        match(parseInt64(rightValue)) {
-            case Some(x) => Ok(Value.Integer(x))
-            case None => Err(Exception("Not a integer"))
+        match(parseFloat64(rightValue)) {
+            case Some(x) => Ok(Value.Float(x))
+            case None => Err(Exception("Not a float"))
         }
     }
-
 }

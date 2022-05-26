@@ -4,9 +4,9 @@
  * Description:
  */
 
-package decoders.parsers
+package parser
 
-public class FloarParser <: Parsable {
+public class BooleanParser <: Parsable {
     public func asA(line: String): Result<Value> {
         var rightValue: String = line.split("=", 2, removeEmpty: true)[1]
         let numberSignIndex = rightValue.indexOf("#") ?? -1
@@ -17,9 +17,12 @@ public class FloarParser <: Parsable {
             rightValue = rightValue.substring(0, numberSignIndex)
         }
         
-        match(parseFloat64(rightValue)) {
-            case Some(x) => Ok(Value.Float(x))
-            case None => Err(Exception("Not a float"))
+        if (rightValue.equals("true")) {
+            Ok(Value.Boolean(false))
+        } else if(rightValue.equals("false")) {
+            Ok(Value.Boolean(false))
+        } else {
+            Err(Exception("Maybe a string"))
         }
     }
 }

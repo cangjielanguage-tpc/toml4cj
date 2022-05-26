@@ -4,4 +4,4 @@
  * Description:
  */
 
-package decoders.parsers
+package parser
