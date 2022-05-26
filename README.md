@@ -2,15 +2,13 @@
 <img src="./doc/assets/logo.png" width="60%" >
 </p>
 
-
 <p align="center">
 <img alt="" src="https://badg.now.sh/badge/release/v0.0.1?color=green" style="display: inline-block;" />
 <img alt="" src="https://badg.now.sh/badge/build/pass?color=green" style="display: inline-block;" />
-<img alt="" src="https://badg.now.sh/badge/cjc/v0.28.2?color=green" style="display: inline-block;" />
-<img alt="" src="https://badg.now.sh/badge/cjcov/90%25?color=green" style="display: inline-block;" />
+<img alt="" src="https://badg.now.sh/badge/cjc/v0.28.4?color=green" style="display: inline-block;" />
+<img alt="" src="https://badg.now.sh/badge/cjcov/0%25?color=green" style="display: inline-block;" />
 <img alt="" src="https://badg.now.sh/badge/project/open?color=green" style="display: inline-block;" />
 </p>
-
 
 ## <img alt="" src="./doc/assets/readme-icon-introduction.png" style="display: inline-block;" width=4%/> 简介
 
@@ -32,9 +30,6 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 <img src="./doc/assets/milestone.png" width="100%" >
 </p>
 
-
-
-
 ##    <img alt="" src="./doc/assets/readme-icon-framework.png" style="display: inline-block;" width=4%/> 架构
 
 ### 架构图：
@@ -42,7 +37,6 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 <p align="center">
 <img src="./doc/assets/framework.png" width="40%" >
 </p>
-
 
 - 通过 load 入口载入 toml 文件
 
@@ -57,6 +51,7 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 ├── README.md
 ├── doc
 │   ├── assets
+│   ├── cjcov
 │   ├── design.md
 │   ├── proposal.md
 │   └── xxx_lib.md
@@ -68,35 +63,57 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 │   ├── decoders
 │   ├── enumerations
 │   ├── exceptions
-│   └── main.cj
+│   ├── parser
+│   └── utils.cj
 └── test
     ├── HLT
     ├── LLT
     └── UT
 ```
 
-- `doc` 是库的设计文档、提案、库的使用文档
+- `doc` 是库的设计文档、提案、库的使用文档、LLT 覆盖率
 - `src` 是库源码目录
 - `test` 是存放测试用例，包括 HLT 用例、LLT 用例和 UT 用例
+
+### 接口说明
+
+目前只实现对 Boolean、integer、float 的解码。
+
+#### class Decoder
+
+```
+// 初始化 Decoder
+public init()
+public init(payload: String)
+
+// 解码 toml 文件， pn 为文件路径
+public func load(pn: String)
+
+// 解码文件流
+public func loads(payload: String)
+
+// 实现解码功能
+public func decode()
+```
 
 ## <img alt="" src="./doc/assets/readme-icon-compile.png" style="display: inline-block;" width=4%/> 编译运行
 
 ### 编译
 
 ```shell
-cpm 
+cpm build
 ```
 
-### 安装
+### 示例
 
 ```shell
+from toml import decoders.*
 
-```
-
-### 运行
-
-```shell
-
+main() {
+    let decoder: Decoder = Decoder()
+    decoder.load("integer002.toml")
+    decoder.decode()
+}
 ```
 
 

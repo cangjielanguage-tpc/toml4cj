@@ -1,20 +1,54 @@
+/*
+ * Copyright (c) Cangjie Library Team 2022-2022. All rights resvered.
+ */
+
+/**
+ * @file
+ * This file is about key
+ */
 package decoders
 
 from std import unicode.*
 
+/**
+ * The class is Key inherited from ToString & Hashable & Equatable<Key>
+ * @author @Annlix
+ * @since 0.28.4
+ */
 public class Key <: ToString & Hashable & Equatable<Key> {
-    var name: String = "" // 当前键的名称
-    var next: ArrayList<Key> = ArrayList<Key>([]) // 下一个键的内容
+    /* The name of the current key */
+    var name: String = ""
+    /* Contents of the next key */
+    var next: ArrayList<Key> = ArrayList<Key>([])
 
+    /**
+     * The Function is init constructor
+     *
+     * @param name of String
+     * @param next of Key
+     *
+     * @since 0.28.4
+     */
     public init(name: String, next: Key) {
         this.name = name
         this.next.add(next)
     }
 
+    /**
+     * The Function is init constructor
+     *
+     * @since 0.28.4
+     */
     public init() {
 
     }
 
+    /**
+     * The Function is toString
+     *
+     * @return Type of String
+     * @since 0.28.4
+     */
     public func toString(): String {
         var str: String = ""
         let len: UInt64 = UInt64(next.size())
@@ -33,22 +67,59 @@ public class Key <: ToString & Hashable & Equatable<Key> {
         str
     }
 
+    /**
+     * The Function is hashCode
+     *
+     * @return Type of Int64
+     * @since 0.28.4
+     */
     public func hashCode(): Int64 {
         toString().hashCode()
     }
 
+    /**
+     * The Function is ==
+     *
+     * @param rhs of Key
+     *
+     * @return Type of Bool
+     * @since 0.28.4
+     */
     public operator func ==(rhs: Key): Bool {
         toString().equals(rhs.toString())
     }
 
+    /**
+     * The Function is !=
+     *
+     * @param rhs of Key
+     *
+     * @return Type of Bool
+     * @since 0.28.4
+     */
     public operator func !=(rhs: Key): Bool {
         !toString().equals(rhs.toString())
     }
 
+    /**
+     * The Function is add
+     *
+     * @param nameItem of String
+     *
+     * @since 0.28.4
+     */
     // public mut func add(nameItem: String) {
     //     name.add(nameItem)
     // }
 
+    /**
+     * The Function is setName
+     *
+     * @param n of String
+     *
+     * @return Type of Unit
+     * @since 0.28.4
+     */
     public func setName(n: String): Unit {
         name = n
     }
