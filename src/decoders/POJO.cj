@@ -10,6 +10,38 @@ package decoders
 
 from std import unicode.*
 
+from std import time.Time
+from std import collection.HashMap
+public enum Value {
+    | Str(String)
+    | Integer(Int64)
+    | Float(Float64)
+    | Boolean(Bool)
+    | DateTime(Time)
+    | Array(Array<Any>) // 由于在 Cangjie 0.27.2 （不含）以后的版本计划移除 list 类型，因此此处采用 list 代替数组
+    | Map(HashMap<String, Hashable>)
+}
+
+
+public enum DecodeMode {
+    | UNSPECIFIED
+    | STREAM
+    | STRING
+}
+
+
+public enum KeyName {
+    | Str(String)
+    | List(KeyName)
+}
+
+
+public enum KeyType {
+    | Str
+    | Obj
+    | Arr
+}
+
 /**
  * The class is Key inherited from ToString & Hashable & Equatable<Key>
  * @author Annlix

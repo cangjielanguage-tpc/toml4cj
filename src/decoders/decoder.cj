@@ -9,10 +9,6 @@
 
 package decoders
 
-import exceptions.*
-import enumerations.*
-import parser.*
-
 from std import io.*
 from std import collection.*
 from std import regex.*
@@ -51,18 +47,6 @@ public class Decoder {
     }
 
     /**
-     * The Function is init constructor
-     *
-     * @param payload of String
-     *
-     * @since 0.28.4
-     */
-    public init(payload: String) {
-        mode = DecodeMode.STRING
-        data = Some(payload)
-    }
-
-    /**
      * The Function is load
      *
      * @param pn of String, file path
@@ -91,22 +75,6 @@ public class Decoder {
             throw Exception("Open file failed")
         }
         stream = Some(file)
-    }
-
-    /**
-     * The Function is loads
-     *
-     * @param payload of String
-     *
-     * @since 0.28.4
-     */
-    public func loads(payload: String) {
-        match(stream) {
-            case Some(x) => throw Exception("Can't use string decode and stream decode at the same time")
-            case None => {}
-        }
-        mode = DecodeMode.STRING
-        data = Some(payload)
     }
 
     /**
@@ -340,7 +308,7 @@ public class Decoder {
         var multilineStrStr: String = ""
         var multiBackSlash: Bool = false
         var pos: Int64 = 0
-        for (idx in 0..=ss.size()) {
+        for (idx in 0..ss.size()) {
             var line: String = ss[idx]
             if (idx > 0) {
                 pos += ss[idx - 1].size() + 1
@@ -401,13 +369,13 @@ public class Decoder {
                     throw TomlDecodeErrorException("Opening key group bracket on line by itself")
                 }
                 var splitStr: String = ""
-                if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                if (line[2] == Symbols.LEFT_SQUARE_BRACKET[0] && line[1] == '.') {
                     arrayOfTables = true
-                    line = line[2..]
-                    splitStr = Symbols.LEFT_SQUARE_BRACKET * 2
+                    line = line[3..]
+                    splitStr = "].]"
                 } else {
                     line = line[1..]
-                    splitStr = Symbols.LEFT_SQUARE_BRACKET
+                    splitStr = Symbols.RIGHT_SQUARE_BRACKET
                 }
                 var i: Int64 = 1
                 var quotesplits: ArrayList<String> = ArrayList<String>()
@@ -420,11 +388,16 @@ public class Decoder {
                     i += quoteSplit.count(splitStr)
                     quoted = !quoted
                 }
-                let lineSplited: Array<String> = line.split(splitStr, i)
-                if (lineSplited.size() < i + 1 || lineSplited[lineSplited.size() - 1].trim() != "") {
+                let lineSplited: Array<String> = line.split(splitStr)
+                if (lineSplited.size() < i + 1 || lineSplited[lineSplited.size() - 1].trim() != ".") {
                     throw TomlDecodeErrorException("Key group not on a line by itself.")
                 }
                 let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited[..lineSplited.size() - 1], delimiter: splitStr).split("."))
+                for (index in groups.size()-1..=0:-1) {
+                    if (groups[index].equals("")) {
+                        groups.remove(index)
+                    }
+                }
                 i = 0
                 while(i < groups.size()) {
                     groups.set(i, groups[i].trim())
@@ -456,6 +429,7 @@ public class Decoder {
                 for(l in 0..groups.size()) {
                     let group: String = groups[l]
                     if ("".equals(group)) {
+
                         throw TomlDecodeErrorException("Can't have a keygroup with an empty")
                     }
                     try {
@@ -552,7 +526,7 @@ public class Decoder {
                                 } while (readLength == DEFAULT_BUFFER_SIZE)
                                 res.toString()}()
             case STRING => match(data) {
-                                case d: String => d
+                                case Some(d) => d
                                 case _ => throw Exception("Must specify the data")
                            }
             case _ => throw Exception("Must specify the data source first")
