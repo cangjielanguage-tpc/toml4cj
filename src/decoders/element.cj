@@ -15,7 +15,7 @@ from std import unicode.*
  * @author Annlix
  * @since 0.28.4
  */
-public class Element {
+class Element {
     let lines: Array<String>
 
     /*

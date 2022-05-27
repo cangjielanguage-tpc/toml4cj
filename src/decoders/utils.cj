@@ -6,6 +6,9 @@
  * @file
  * This file is about comment function
  */
+
+package decoders
+
 from std import regex.*
 from std import collection.*
 from std import math.*
