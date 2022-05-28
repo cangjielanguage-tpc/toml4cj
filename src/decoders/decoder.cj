@@ -16,8 +16,9 @@ from std import unicode.*
 from serialization import serialization.*
 from std import convert.*
 from std import time.*
+from encoding import json.*
 
-type element = HashMap<Key, Value>
+//type element = HashMap<Key, Value>
 
 /**
  * The class is Decoder
@@ -82,10 +83,8 @@ public class Decoder {
      *
      * @since 0.28.4
      */
-    public func decode() {
+    public func decode():JsonObject {
         let implicitGroups: ArrayList<String> = ArrayList<String>()
-        // Todo: retval = decoder.get_empty_table()
-        // Todo: currentlevel = retval
         let original: String = readData()
         var sl: Array<Char> = original.toCharArray()
         var openArr: Int64 = 0
@@ -100,7 +99,9 @@ public class Decoder {
         var key: String = ""
         var prevKey: String = ""
         var lineNo: Int64 = 1
-
+        let jsons: JsonObject = JsonObject()  // json_return
+        var subjo: JsonValue = jsons
+        let nilJson: JsonValue = JsonObject()
         for (i in 0..sl.size()) {
             let item: Char = sl[i]
             if(item == Symbols.CR[0] && sl[i + 1] == Symbols.LF[0]) {
@@ -109,7 +110,7 @@ public class Decoder {
             }
             if (0 != keyName) {
                 key += item
-                if (item == Symbols.LF[0]) {
+                if (item == '\n') {
                     throw TomlDecodeErrorException("Key name found without value. Reach end of line.")
                 }
                 if (openString) {
@@ -127,21 +128,23 @@ public class Decoder {
                         }
                     }
                     continue
-                } else if(keyName == 1) {
+                }
+                else if(keyName == 1) {
                     if (item.isAsciiWhiteSpace()) {
                         keyName = 2
                         continue
                     } else if (item == Symbols.DOT[0]) {
                         dottedKey = true
                         continue
-                    } else if ((item.isAsciiLetter() && item.isAsciiNumber()) || item == Symbols.UNDERLINE[0] || item == Symbols.DASHED[0]) {
+                    } else if ((item.isAsciiLetter() || item.isAsciiNumber()) || item == '_' || item == '-') {
                         continue
                     } else if (dottedKey && sl[i - 1] == Symbols.DOT[0] && (item == Symbols.QUOTE[0] || item == Symbols.SINGLE_QUOTE[0])) {
                         openString = true
                         openStrChar = item
                         continue
                     }
-                } else if (keyName == 2) {
+                }
+                else if (keyName == 2) {
                     if (item.isAsciiWhiteSpace()) {
                         if (dottedKey) {
                             let nextItem: Char = sl[i + 1]
@@ -160,138 +163,140 @@ public class Decoder {
                         continue
                     }
                 }
-                
-                if (item == Symbols.EQUAL_SYMBOL[0]) {
+                if (item == '=') {
                     keyName = 0
                     prevKey = key[..key.size() - 1].trimRight()
                     key = ""
                     dottedKey = false
-                } else {
-                    throw TomlDecodeErrorException("Found invalid character in key name: '" + item + "'. Try quoting the key name.")
                 }
-                if (item == Symbols.SINGLE_QUOTE[0] && openStrChar != Symbols.QUOTE[0]) {
-                    var k: Int64 = 1
-                    try {
-                        while (sl[i - k] == Symbols.SINGLE_QUOTE[0]) {
-                            k += 1
-                            if (k == 3) {
-                                break
-                            }
-                        }
-                    } catch (e: IndexOutOfBoundsException) {
+                else {
+                    throw TomlDecodeErrorException("Found invalid character in key name: '" + item + "' Try quoting the key name.")
+                }
 
+            }
+            if (item == '\'' && openStrChar != '"') {
+                var k: Int64 = 1
+                try {
+                    while (sl[i - k] == Symbols.SINGLE_QUOTE[0]) {
+                        k += 1
+                        if (k == 3) {
+                            break
+                        }
                     }
-                    if (k == 3) {
+                } catch (e: IndexOutOfBoundsException) {
+
+                }
+                if (k == 3) {
+                    multilineStr = !multilineStr
+                    openString = multilineStr
+                } else {
+                    openString = !openString
+                }
+                if (openString) {
+                    openStrChar = Symbols.SINGLE_QUOTE[0]
+                } else {
+                    openStrChar = '0'
+                }
+            }
+            if (item == '"' && openStrChar != '\'') {
+                var oddBackSlash: Bool = false
+                var k: Int64 = 1
+                var tripQuote: Bool = false
+                try {
+                    while(sl[i - k] == Symbols.QUOTE[0]) {
+                        k += 1
+                        if (k == 3) {
+                            tripQuote = true
+                            break
+                        }
+                    }
+                    if (k == 1 || (k == 3 && tripQuote)) {
+                        while (sl[i - k] == Symbols.BACK_SLASH[0]) {
+                            oddBackSlash = !oddBackSlash
+                            k += 1
+                        }
+                    }
+                } catch(e: IndexOutOfBoundsException) {
+
+                }
+                if (!oddBackSlash) {
+                    if (tripQuote) {
                         multilineStr = !multilineStr
                         openString = multilineStr
                     } else {
                         openString = !openString
-                    } 
-                    if (openString) {
-                        openStrChar = Symbols.SINGLE_QUOTE[0]
-                    } else {
-                        openStrChar = '0'
                     }
                 }
-                if (item == Symbols.QUOTE[0] && openStrChar != Symbols.SINGLE_QUOTE[0]) {
-                    var oddBackSlash: Bool = false
-                    var k: Int64 = 1
-                    var tripQuote: Bool = false
-                    try {
-                        while(sl[i - k] == Symbols.QUOTE[0]) {
-                            k += 1
-                            if (k == 3) {
-                                tripQuote = true
-                                break
-                            }
-                        }
-                        if (k == 1 || (k == 3 && tripQuote)) {
-                            while (sl[i - k] == Symbols.BACK_SLASH[0]) {
-                                oddBackSlash = !oddBackSlash
-                                k += 1
-                            }
-                        }
-                    } catch(e: IndexOutOfBoundsException) {
-                        
-                    }
-                    if (!oddBackSlash) {
-                        if (tripQuote) {
-                            multilineStr = !multilineStr
-                            openString = multilineStr
-                        } else {
-                            openString = !openString
-                        }
-                    }
-                    if (openString) {
-                        openStrChar = Symbols.QUOTE[0]
-                    } else {
-                        openStrChar = '0'
-                    }
+                if (openString) {
+                    openStrChar = Symbols.QUOTE[0]
+                } else {
+                    openStrChar = '0'
                 }
-                if (item == Symbols.NUMBER_SIGN[0] && (!openString && !keyGroup && !arrayOfTables)) {
-                    var j: Int64 = 1
-                    var comment: String = ""
-                    try {
-                        while(sl[j] != Symbols.LF[0]) {
-                            comment += sl[j]
-                            sl[j] = Symbols.SPACE[0]
-                            j += 1
-                        }
-                    } catch(e: IndexOutOfBoundsException) {
-                        break
+            }
+            if (item == '#' && (!openString && !keyGroup && !arrayOfTables)) {
+                var j: Int64 = i
+                var comment: String = ""
+                try {
+                    while(sl[j] != '\n') {
+                        comment += sl[j]
+                        sl[j] = Symbols.SPACE[0]
+                        j += 1
                     }
-                    if (openArr == 0) {
-                        // Todo: decoder.preserve_comment(line_no, prev_key, comment, beginline)
-                    }
+                } catch(e: IndexOutOfBoundsException) {
+                    break
                 }
-                if (item == Symbols.LEFT_SQUARE_BRACKET[0] && (!openString && !keyGroup && !arrayOfTables)) {
-                    if (beginLine) {
-                        if (sl.size() > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) {
-                            arrayOfTables = true
-                        } else {
-                            keyGroup = true
-                        }
-                    } else {
-                        openArr += 1
-                    }
+                if (openArr == 0) {
+                    // Todo: decoder.preserve_comment(line_no, prev_key, comment, beginline)
                 }
-                if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) {
-                    if (keyGroup) {
-                        keyGroup = false
-                    } else if (arrayOfTables) {
-                        if(sl[i - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]) {
-                            arrayOfTables = false
-                        }
+            }
+            if (item == Symbols.LEFT_SQUARE_BRACKET[0] && (!openString && !keyGroup && !arrayOfTables)) {
+                if (beginLine) {
+                    if (sl.size() > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                        arrayOfTables = true
                     } else {
-                        openArr -= 1
+                        keyGroup = true
                     }
+                } else {
+                    openArr += 1
                 }
-                if (item == Symbols.LF[0]) {
-                    if (openString || multilineStr) {
-                        if (!multilineStr) {
-                            throw TomlDecodeErrorException("Unbalanced quotes")
-                        }
-                        if ((sl[i - 1] == Symbols.SINGLE_QUOTE[0] || sl[i - 1] == Symbols.QUOTE[0] ) && (sl[i - 2] == sl[i - 1])) {
-                            sl[i] == sl[i - 1]
-                            if(sl[i - 3] == sl[i - 1]) {
-                                sl[i - 3] = Symbols.SPACE[0]
-                            }
-                        }
-                    } else if (openArr != 0) {
-                        sl[i] = Symbols.SPACE[0]
-                    } else {
-                        beginLine = true
+            }
+            if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) {
+                if (keyGroup) {
+                    keyGroup = false
+                } else if (arrayOfTables) {
+                    if(sl[i - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]) {
+                        arrayOfTables = false
                     }
-                    lineNo += 1
-                } else if (beginLine && sl[i] != Symbols.SPACE[0] && sl[i] != Symbols.HORIZONTAL_TAB[0]) {
-                    beginLine = false
-                    if (!keyGroup && !arrayOfTables) {
-                        if (sl[i] == Symbols.EQUAL_SYMBOL[0]) {
-                            throw TomlDecodeErrorException("Found empty keyname")
-                        }
-                        keyName = 1
-                        key += item
+                } else {
+                    openArr -= 1
+                }
+            }
+            if (item == Symbols.LF[0]) {
+                if (openString || multilineStr) {
+                    if (!multilineStr) {
+                        throw TomlDecodeErrorException("Unbalanced quotes")
                     }
+                    if ((sl[i - 1] == Symbols.SINGLE_QUOTE[0] || sl[i - 1] == Symbols.QUOTE[0] ) && (sl[i - 2] == sl[i - 1])) {
+                        sl[i] == sl[i - 1]
+                        if(sl[i - 3] == sl[i - 1]) {
+                            sl[i - 3] = Symbols.SPACE[0]
+                        }
+                    }
+                } else if (openArr != 0) {
+                    sl[i] = Symbols.SPACE[0]
+                } else {
+                    beginLine = true
+                }
+                lineNo += 1
+            }
+            else if (beginLine && sl[i] != ' ' && sl[i] != '\t') {
+                beginLine = false
+                if (!keyGroup && !arrayOfTables) {
+                    if (sl[i] == Symbols.EQUAL_SYMBOL[0]) {
+                        throw TomlDecodeErrorException("Found empty keyname")
+                    }
+                    keyName = 1
+                    key += item
                 }
             }
         }
@@ -302,18 +307,20 @@ public class Decoder {
             // Reached EOF and have an unterminated string
             throw TomlDecodeErrorException("Unterminated string found. Reached end of file.")
         }
-        var s: String = joinChar(".", sl)
+        var s: String = joinChar(sl)
         var ss: Array<String> = s.split(Symbols.LF)
         var multiKey: Bool = false
         var multilineStrStr: String = ""
         var multiBackSlash: Bool = false
         var pos: Int64 = 0
         for (idx in 0..ss.size()) {
-            var line: String = ss[idx]
+            var line: String = ss[idx].trim()
+            if (line.isEmpty()) {
+                continue
+            }
             if (idx > 0) {
                 pos += ss[idx - 1].size() + 1
             }
-
             // decoder.embed_comments(idx, currentLevel)
             if (multilineStrStr.size() == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {
                 line = line.trim()
@@ -333,34 +340,10 @@ public class Decoder {
                     closed = line[line.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
                 } else if (line.size() > 2) {
                     let lineSize: Int64 = line.size()
-                    closed = (line[lineSize - 1] == multilineStrStr[0] && line[lineSize - 2] == multilineStrStr[0] && line[lineSize - 3] == multilineStrStr[0])
+                    closed = (line[lineSize - 1] == multilineStrStr[0] &&
+                                line[lineSize - 2] == multilineStrStr[0] &&
+                                line[lineSize - 3] == multilineStrStr[0])
                 }
-                // if (closed) {
-                //     try {
-                //         // value, vtype = decoder.load_value(multilinestr)
-                //     } catch(e: Exception) {
-                        
-                //     }
-                //     currentLevel
-                // }
-                // if closed:
-                //     try:
-                //         value, vtype = decoder.load_value(multilinestr)
-                //     except ValueError as err:
-                //         raise TomlDecodeError(str(err), original, pos)
-                //     currentlevel[multikey] = value
-                //     multikey = None
-                //     multilinestr = ""
-                // else:
-                //     k = len(multilinestr) - 1
-                //     while k > -1 and multilinestr[k] == '\\':
-                //         multibackslash = not multibackslash
-                //         k -= 1
-                //     if multibackslash:
-                //         multilinestr = multilinestr[:-1]
-                //     else:
-                //         multilinestr += "\n"
-                // }
                 continue
             }
             if(line[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
@@ -369,17 +352,16 @@ public class Decoder {
                     throw TomlDecodeErrorException("Opening key group bracket on line by itself")
                 }
                 var splitStr: String = ""
-                if (line[2] == Symbols.LEFT_SQUARE_BRACKET[0] && line[1] == '.') {
+                if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {
                     arrayOfTables = true
-                    line = line[3..]
-                    splitStr = "].]"
+                    line = line[2..]
+                    splitStr = "]]"
                 } else {
                     line = line[1..]
                     splitStr = Symbols.RIGHT_SQUARE_BRACKET
                 }
                 var i: Int64 = 1
                 var quotesplits: ArrayList<String> = ArrayList<String>()
-                // quotesplits = decoder._get_split_on_quotes(line)
                 var quoted: Bool = false
                 for(quoteSplit in quotesplits) {
                     if (!quoted && 0 <= (quoteSplit.indexOf(splitStr) ?? -1)) {
@@ -389,7 +371,7 @@ public class Decoder {
                     quoted = !quoted
                 }
                 let lineSplited: Array<String> = line.split(splitStr)
-                if (lineSplited.size() < i + 1 || lineSplited[lineSplited.size() - 1].trim() != ".") {
+                if (lineSplited.size() < i + 1 || lineSplited[lineSplited.size() - 1].trim() != "") {
                     throw TomlDecodeErrorException("Key group not on a line by itself.")
                 }
                 let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited[..lineSplited.size() - 1], delimiter: splitStr).split("."))
@@ -399,6 +381,8 @@ public class Decoder {
                     }
                 }
                 i = 0
+
+                        /// group
                 while(i < groups.size()) {
                     groups.set(i, groups[i].trim())
                     if (groups[i].size() > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
@@ -425,20 +409,18 @@ public class Decoder {
                     }
                     i += 1
                 }
-                // currentLevel = retVal
                 for(l in 0..groups.size()) {
                     let group: String = groups[l]
                     if ("".equals(group)) {
-
                         throw TomlDecodeErrorException("Can't have a keygroup with an empty")
                     }
                     try {
-                        // currentLevel[group]
+                        subjo.asObject().getOrThrow().get(group)
                         if (l == groups.size() - 1) {
                             if(arrayListContains(implicitGroups, group)) {
                                 implicitGroups.removeIf({item => item == group})
                                 if (arrayOfTables) {
-                                    throw TomlDecodeErrorException("An implicitly defined table can't be an array")
+                                    throw TomlDecodeErrorException("todo, An implicitly defined table can't be an array")
                                 }
                             } else if (arrayOfTables) {
                                 // currentLevel[group].append(decoder.get_empty_table())
@@ -447,20 +429,19 @@ public class Decoder {
                             }
                         }
                     } catch(e: Exception) {
-                        // except TypeError:
-                        //     currentlevel = currentlevel[-1]
-                        //     if group not in currentlevel:
-                        //         currentlevel[group] = decoder.get_empty_table()
-                        //         if i == len(groups) - 1 and arrayoftables:
-                        //             currentlevel[group] = [decoder.get_empty_table()]
-                        // except KeyError:
-                        //     if i != len(groups) - 1:
-                        //         implicitgroups.append(group)
-                        //     currentlevel[group] = decoder.get_empty_table()
-                        //     if i == len(groups) - 1 and arrayoftables:
-                        //         currentlevel[group] = [decoder.get_empty_table()]
+                        if (e.toString().contains("JsonException:")) {
+                            if (i != groups.size()-1) {
+                                implicitGroups.add(group)
+                            }
+                            subjo.asObject().getOrThrow().put(group, nilJson)
+                            if ((i == groups.size() - 1) && arrayOfTables) {
+                                // add array
+                            }
+                        } else {
+                            throw Exception("${e.toString()}")
+                        }
                     }
-                    // currentLevel = currentLevel[group]
+                    subjo = subjo.asObject().getOrThrow().get(group)
                     if (arrayOfTables) {
                         try {
                             // currentLevel = currentLevel[currentLevel.size() - 1]
@@ -474,13 +455,14 @@ public class Decoder {
                     throw TomlDecodeErrorException("Line break are not allowed in inline objects")
                 }
                 try {
-                    // decoder.load_inline_object(line, currentLevel, multiKey, multiBackSlash)
+                    throw TomlDecodeErrorException("")
                 } catch(e: Exception) {
                     throw TomlDecodeErrorException("")
                 }
             } else if (line.contains(Symbols.EQUAL_SYMBOL)) {
                 try {
-                    // ret = decoder.load_line(line, currentLevel, multiKey, multiBackSlash)
+                    let (k,v) = loadLine(line)
+                    subjo.asObject().getOrThrow().put(k, JsonString(v))
                 } catch(e: Exception) {
                     throw TomlDecodeErrorException("")
                 }
@@ -489,7 +471,12 @@ public class Decoder {
                 // }
             }
         }
-        // return retval
+        return jsons
+    }
+
+    private func loadLine(line: String):String*String {
+        let kv = line.split('=')
+        return (kv[0].trim(), kv[1].trim())
     }
 
     private func arrayListContains<T>(al: ArrayList<T>, element: T) : Bool where T <: Equatable<T> {
@@ -501,10 +488,10 @@ public class Decoder {
         return false
     }
     
-    private func joinChar(delimiter: String, chars: Array<Char>): String {
+    private func joinChar(chars: Array<Char>): String {
         var result: String = ""
         for (c in chars) {
-            result += c.toString() + "."
+            result += c.toString()
         }
         result
     }
@@ -533,209 +520,134 @@ public class Decoder {
         }
         data   
     }
-}
 
-/*
- * The class is TomlDecoder
- * @author Annlix
- * @since 0.28.4
- */
-class TomlDecoder {
-    private static let numberWithUnderScores: Regex = Regex("([0-9])(_([0-9]))*")
-
-
-    func loadInlineObject(line: String) {
-        let candidateGroups: ArrayList<String> = ArrayList<String>(line[1..line.size() - 1].split(','))
-        let groups: ArrayList<String> = ArrayList<String>()
-
-        if (candidateGroups.size() == 1 && candidateGroups[0].trim().size() != 0) {
-            candidateGroups.remove(candidateGroups.size() - 1)
+    private func loadValue(vs: String, strictlyValid!: Bool = true): String {
+        var v: String = vs
+        if (v.isEmpty()) {
+            throw Exception()
         }
-        while(candidateGroups.size() > 0) {
-            let candidateGroup: String = candidateGroups[0]
-            candidateGroups.remove(0)
-            if (-1 == (candidateGroup.indexOf(Symbols.EQUAL_SYMBOL[0]) ?? -1)) {
-                throw Exception("Invalid inline table value encountered")
+        if (v.equals("true")) {
+            return true.toString()
+        } else if (v.toLower() == "true") {
+            throw Exception()
+        } else if (v.equals("false")) {
+            return false.toString()
+        } else if (v.toLower() == "false") {
+            throw Exception()
+        } else if (v[0] == '"' || v[0] == '\'') {
+            let quotechar = v[0]
+            var testv = v[1..].split(quotechar)
+            var triplequolte = false
+            var triplequoltecount = 0
+            if (testv.size() > 1 && testv[0] == "" && testv[1] == "") {
+                testv = testv[2..]
+                triplequolte = true
             }
-            let keyValues: Array<String> = candidateGroup.split(Symbols.EQUAL_SYMBOL[0], 2)
-            let key: String = keyValues[0]
-            var value: String = keyValues[1]
-            value = value.trim()
-            if ((value[0] == value[value.size() - 1]) && [Symbols.QUOTE[0], Symbols.SINGLE_QUOTE[0]].contains(value[0]) || (['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].contains(value[0]) || ["value", "false"].contains(value) || (value[0] == Symbols.LEFT_SQUARE_BRACKET[0] && value[value.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]) || (value[0] == Symbols.LEFT_BRACE[0] && value[value.size() - 1] == Symbols.RIGHT_BRACE[0]))) {
-                groups.append(candidateGroup)
-            } else if (candidateGroups.size() > 0) {
-                candidateGroups[0] = candidateGroup + "," + candidateGroups[0]
-            } else {
-                throw Exception("Invalid inline table value encountered")
-            }
-        }
+            var closed = false
+            for (tv in testv) {
+                if (tv == "") {
+                    if (triplequolte) {
+                        triplequoltecount += 1
+                    } else {
+                        closed = true
+                    }
+                } else {
+                    var oddbackslash = false
+                    try {
+                        var i = tv.size() - 1
+                        var j = tv[i]
+                        while (j == '\\') {
+                            oddbackslash = !oddbackslash
+                            i--
+                            j = tv[i]
+                        }
+                    } catch (e: Exception) {
+                        continue
+                    }
+                    if (!oddbackslash) {
+                        if (closed) {
+                            throw Exception()
+                        } else {
+                            if (!triplequolte || triplequoltecount > 1) {
+                                closed = true
+                            } else {
+                                triplequoltecount = 0
+                            }
+                        }
 
-        for (group in groups) {
-            // status = self.load_line(group, currentlevel, multikey, multibackslash)
-            // if status is not None:
-            //     break
-        }
-    }
-
-
-    private func getSplitOnQuotes(line: String): Array<String> {
-        var doubleQuoteSplits: Array<String> = line.split(Symbols.QUOTE[0])
-        var quoted: Bool = false
-        let quoteSplits: ArrayList<String> = ArrayList<String>([])
-        if (doubleQuoteSplits.size() > 1 && doubleQuoteSplits[0].contains(Symbols.SINGLE_QUOTE[0])) {
-            var singleQuoteSplits: ArrayList<String> = ArrayList<String>(doubleQuoteSplits[0].split(Symbols.SINGLE_QUOTE[0]))
-            doubleQuoteSplits = doubleQuoteSplits[1..]
-            while(singleQuoteSplits.size() % 2 == 0 && doubleQuoteSplits.size() != 0) {
-                singleQuoteSplits[singleQuoteSplits.size() - 1] += Symbols.QUOTE + doubleQuoteSplits[0]
-                doubleQuoteSplits = doubleQuoteSplits[1..]
-
-                if (singleQuoteSplits[singleQuoteSplits.size() - 1].contains(Symbols.SINGLE_QUOTE[0])) {
-                    singleQuoteSplits.appendAll(singleQuoteSplits[..singleQuoteSplits.size() - 1])
-                    singleQuoteSplits.appendAll(singleQuoteSplits[singleQuoteSplits.size() - 1].split(Symbols.SINGLE_QUOTE[0]))
+                    }
                 }
             }
-            quoteSplits.appendAll(singleQuoteSplits)
-        }
-        for (doubleQuoteSplit in doubleQuoteSplits) {
-            if (quoted) {
-                quoteSplits.append(doubleQuoteSplit)
-            } else {
-                quoteSplits.appendAll(doubleQuoteSplit.split(Symbols.SINGLE_QUOTE[0]))
-                quoted = !quoted
-            }
-        }
-        Array<String>(quoteSplits)
-    }
-
-    func loadLine(line: String) {
-        var i: Int64 = 1
-        let quoteSplits: Array<String> = getSplitOnQuotes(line)
-        var quoted: Bool = false
-        for (quoteSplit in quoteSplits) {
-            if (!quoted && -1 != (quoteSplit.indexOf(Symbols.EQUAL_SYMBOL[0]) ?? -1)) {
-                break
-            }
-            i += quoteSplit.count(Symbols.EQUAL_SYMBOL[0])
-            quoted = !quoted
-        }
-        var pair: Array<String> = line.split(Symbols.EQUAL_SYMBOL, i)
-        let strictlyValid: Bool = strictlyValidNum(pair[pair.size() - 1])
-        let matchResult: ?MatchData = TomlDecoder.numberWithUnderScores.matcher(pair[pair.size() - 1]).matchStart()
-        match(matchResult) {
-            case Some(x: MatchData) => pair[pair.size() - 1] = pair[pair.size() - 1].replace(Symbols.UNDERLINE, "");
-            case _ => ()
-        }
-        while(0 != pair[pair.size() - 1].size() && (
-            pair[pair.size() - 1][0] != ' ' && pair[pair.size() - 1][0] != Symbols.HORIZONTAL_TAB[0] && 
-            pair[pair.size() - 1][0] != Symbols.SINGLE_QUOTE[0] && pair[pair.size() - 1][0] != Symbols.QUOTE[0] && 
-            pair[pair.size() - 1][0] != Symbols.LEFT_SQUARE_BRACKET[0] && pair[pair.size() - 1][0] != Symbols.LEFT_BRACE[0] && 
-            pair[pair.size() - 1].trim() != "true" && pair[pair.size() - 1].trim() != "false"
-        )) {
-            match (parseFloat64(pair[pair.size() - 1])) {
-                case Some(x) => break
-                case None => ()
-            }
-            
-        }
-    }
-
-    private func strictlyValidNum(n: String): Bool {
-        var m: String = n.trim()
-        if (m.size() != 0) {
-            return false
-        }
-        if (m[0] == Symbols.DASHED[0]) {
-            return false
-        }
-        if (m[m.size() - 1] == Symbols.UNDERLINE[0]) {
-            return false
-        }
-        if (-1 != (m.indexOf("_.") ?? -1) || -1 != (m.indexOf("._") ?? -1)) {
-            return false
-        }
-        if (m.size() == 1) {
-            return true
-        }
-        if (m[0] == '0' && -1 == (".obx".indexOf(m[1]) ?? -1)) {
-            return false
-        }
-        if (m[0] == Symbols.PLUS[0] || m[0] == Symbols.DASHED[0]) {
-            m = m[1..]
-            if (m.size() > 1 && m[0] != '0' && m[1] != Symbols.DOT[0]) {
-                return false
-            }
-        }
-        if (-1 != (m.indexOf(Symbols.UNDERLINE * 3) ?? -1)) {
-            return false
-        }
-        return true
-    }
-
-    private func loadDate(val: String) {
-        var microSecond: Int64 = 0
-        var tz: ?TomlTz = None
-        var subSecondVal: String
-        var subSecondValAndTz: String
-        var tzVal: ?String
-        try {
-            if (val.size() > 19) {
-                if (val[19] == Symbols.DOT[0]) {
-                    if ('Z' == val[val.size() - 1].toAsciiUpperCase()) {
-                        subSecondVal = val[20..val.size() - 1]
-                        tzVal = Some("Z")
+            if (quotechar == '"') {
+                var escapeseqs = v.split('\\')[1..]
+                var backslash = false
+                for (i in escapeseqs) {
+                    if (i == "") {
+                        backslash = !backslash
                     } else {
-                        subSecondValAndTz = val[20..]
-                        let splitPoint: Int64
-                        if (-1 != (subSecondValAndTz.indexOf(Symbols.PLUS[0]) ?? -1)) {
-                            splitPoint = subSecondValAndTz.indexOf(Symbols.PLUS[0]) ?? -1 // The splitPoint never be -1
-                            subSecondVal = subSecondValAndTz[..splitPoint]
-                            tzVal = Some(subSecondValAndTz[splitPoint..])
-                        } else if (-1 != (subSecondValAndTz.indexOf(Symbols.DASHED[0]) ?? -1)) {
-                            splitPoint = subSecondValAndTz.indexOf(Symbols.DASHED[0]) ?? -1
-                            subSecondVal = subSecondValAndTz[..splitPoint]
-                            tzVal = Some(subSecondValAndTz[splitPoint..])
-                        } else {
-                            tzVal = None
-                            subSecondVal = subSecondValAndTz
+                        if (!getInchars(i[0]) && i[0] != 'u' && i[0] != 'U' && !backslash) {
+                            throw Exception()
+                        }
+                        if (backslash) {
+                            backslash = false
                         }
                     }
-                    match(tzVal) {
-                        case Some(x) => tz = TomlTz(x)
-                        case None => ()
+                }
+                for ( prefix in ["\\u", "\\U"]) {
+                    if (v.contains(prefix)) {
+                        let hexbytes = v.split(prefix)
+                        v = load_unicode_escapes(hexbytes[0], hexbytes[1..], prefix)
                     }
-                    let subSecondValInt: Int64 = parseInt64(subSecondVal).getOrThrow()
-                    microSecond = subSecondValInt * (10 ** (6 - subSecondVal.size()))
-                } else {
-                    tz = Some(TomlTz(val[19..]))
                 }
+                v = unescape(v)
             }
-        } catch(e: Exception) {
-            
-        }
-        if (-1 != (val[1..].indexOf(Symbols.DASHED[0]) ?? -1)) {
-            
-        }
-        let d: Time
-        try {
-            let year: Int64 = parseInt64(val[..4]).getOrThrow()
-            let monthInt: Int64 = parseInt64(val[5..7]).getOrThrow()
-            let day: Int64 = parseInt64(val[8..10]).getOrThrow()
-            let month: Month = Month.of(monthInt).getOrThrow()
-            if (val.size() == 10) {
-                d = Time(year, month, day)
-            } else {
-                let hour: Int64 = parseInt64(val[11..13]).getOrThrow()
-                let minute: Int64 = parseInt64(val[14..16]).getOrThrow()
-                let second: Int64 = parseInt64(val[17..19]).getOrThrow()
-                match(tz) {
-                    case Some(x) => d = Time(year, month, day, hour: hour, min: minute, sec: second, nsec: microSecond * Int64(1e6), loc: x.location())
-                    case None => throw Exception("The timezone is invalid")
-                }
-                
+            if (v.size() > 1 && v[1] == quotechar && (v.size() < 3 || v[1] == v[2])) {
+                v = v[2..v.size() - 2]
             }
-        } catch(e: Exception) {
+            return v[1 .. v.size()-1]
+        } else if (v[0] == '[') {
+            throw Exception(" not support")
+        } else if (v[0] == '{'){
+            throw Exception(" not support")
+        } else {
+            return v
+        }
+    }
 
+    private func load_unicode_escapes(v: String, hexbytes: Array<String>, prefix: String): String {
+        return v
+    }
+    private let mypsbs = ['0', 'b', 'f', 'n', 'r', 't', '"']
+    private func getInchars(c: Char): Bool {
+        for (m in mypsbs) {
+            if (c == m) {
+                return true
+            }
         }
-        d
+        return false
+    }
+    private func unescape(vs: String): String {
+        var v = vs
+        var i : Int64 = 0
+        var backslash = false
+        while (i < v.size()) {
+            if (backslash){
+                backslash = false
+                if (getInchars(v[i])) {
+                    v = v[0..i-1] + v[i] + v[i+1..]
+                } else if (v[i] == '\\') {
+                    v = v[..i-1] + v[i..]
+                } else if (v[i] == 'u' || v[i] == 'U') {
+                    i +=1
+                } else {
+                    throw Exception()
+                }
+                continue
+            } else if (v[i] == '\\') {
+                backslash = true
+            }
+            i++
+        }
+        return v
     }
 }
