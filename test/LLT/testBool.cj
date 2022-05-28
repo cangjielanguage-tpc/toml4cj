@@ -13,7 +13,8 @@ main() {
     let decoder: Decoder = Decoder()
     for(i in 0..arr.size()) {
         decoder.load(arr[i])
-        decoder.decode()
+        let a = decoder.decode()
+        println(a)
     }
 
 }
