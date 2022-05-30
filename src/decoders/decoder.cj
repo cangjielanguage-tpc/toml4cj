@@ -18,7 +18,6 @@ from std import convert.*
 from std import time.*
 from encoding import json.*
 
-//type element = HashMap<Key, Value>
 
 /**
  * The class is Decoder
@@ -29,13 +28,6 @@ public class Decoder {
     var stream: Option<Stream> = None
     var data: Option<String> = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
-    //static let booleanParser: BooleanParser = BooleanParser()
-    //static let integerParser: IntegerParser = IntegerParser()
-    // static let dateTimeParser: DateTimeParser = DateTimeParser()
-    // static let floatParser: FloatParser = FloatParser()
-    // static let listParser: ListParser = ListParser()
-    // static let mapParser: MapParser = MapParser()
-    // static let stringParser: StringParser = StringParser()
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
     private let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
     private let numberWithUnderScores: Regex = Regex("([0-9])(_([0-9]))*")
