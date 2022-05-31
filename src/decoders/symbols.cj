@@ -9,6 +9,11 @@
 
 package decoders
 
+/**
+ * The class is Symbols
+ * @author annlix
+ * @since 0.29.3
+ */
 public class Symbols {
     static public let QUOTE: String = String.fromUtf8([0x22]) // "
     static public let CR: String = String.fromUtf8([0x0D]) // \r

@@ -23,6 +23,13 @@ public class TomlTz {
     private let hour: Int64
     private let minute: Int64
 
+    /*
+     * The Function is init constructor
+     *
+     * @param tomlOffset of String
+     *
+     * @since 0.29.3
+     */
     init(tomlOffset: String) {
         if (tomlOffset == "Z") {
             rawOffset = "+00:00"
@@ -38,19 +45,44 @@ public class TomlTz {
         minute = parseInt64(rawOffset[4..6]) ?? 0
     }
 
-    func tzname() {
+    /**
+     * The Function is tzname
+     *
+     *
+     * @since 0.29.3
+     */
+    public func tzname() {
         return "UTC" + rawOffset
     }
 
-    func utfOffset() {
+    /**
+     * The Function is utfOffset
+     *
+     *
+     * @since 0.29.3
+     */
+    public func utfOffset() {
         return (Duration.hour(hour) + Duration.minute(minute) * sign)
     }
 
-    func dst() {
+    /**
+     * The Function is dst
+     *
+     *
+     * @since 0.29.3
+     */
+    public func dst() {
         return Duration.hour(0) + Duration.minute(0) + Duration.second(0) + Duration.microsecond(0) + Duration.nanosecond(0)
     }
-    
-    func location(): Location {
+
+    /**
+     * The Function is location
+     *
+     *
+     * @return Type of Location
+     * @since 0.29.3
+     */
+    public func location(): Location {
         Location(tzname(), utfOffset())
     }
 }
