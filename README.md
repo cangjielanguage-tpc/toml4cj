@@ -5,8 +5,8 @@
 <p align="center">
 <img alt="" src="https://badg.now.sh/badge/release/v0.0.1?color=green" style="display: inline-block;" />
 <img alt="" src="https://badg.now.sh/badge/build/pass?color=green" style="display: inline-block;" />
-<img alt="" src="https://badg.now.sh/badge/cjc/v0.28.4?color=green" style="display: inline-block;" />
-<img alt="" src="https://badg.now.sh/badge/cjcov/0%25?color=green" style="display: inline-block;" />
+<img alt="" src="https://badg.now.sh/badge/cjc/v0.29.3?color=green" style="display: inline-block;" />
+<img alt="" src="https://badg.now.sh/badge/cjcov/83%25?color=green" style="display: inline-block;" />
 <img alt="" src="https://badg.now.sh/badge/project/open?color=green" style="display: inline-block;" />
 </p>
 
@@ -14,7 +14,7 @@
 
 TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML 被设计成可以无歧义地映射为哈希表。TOML 应该能很容易地被解析成各种语言中的数据结构。https://toml.io/cn/
 
-该项目是仓颉语言实现 TOML v1.0.0 的语言库。
+该项目是仓颉语言实现 TOML v1.0.0 的语言库。参考地址：https://github.com/uiri/toml
 
 ### 特性
 
@@ -89,9 +89,6 @@ public init(payload: String)
 // 解码 toml 文件， pn 为文件路径
 public func load(pn: String)
 
-// 解码文件流
-public func loads(payload: String)
-
 // 实现解码功能
 public func decode()
 ```
@@ -112,11 +109,10 @@ from toml import decoders.*
 main() {
     let decoder: Decoder = Decoder()
     decoder.load("integer002.toml")
-    decoder.decode()
+    let a = decoder.decode()
+    println(a)
 }
 ```
-
-
 
 ## <img alt="" src="./doc/assets/readme-icon-contribute.png" style="display: inline-block;" width=4%/> 参与贡献
 

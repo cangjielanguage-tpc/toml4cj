@@ -318,24 +318,25 @@ public class Decoder {
             if (line.equals("") && (!multiKey || multiBackSlash)) {
                 continue
             }
-            if (multiKey) {
-                if (multiBackSlash) {
-                    multilineStrStr += line
-                } else {
-                    multilineStrStr += line
-                }
-                multiBackSlash = false
-                var closed: Bool = false
-                if (multilineStrStr[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
-                    closed = line[line.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
-                } else if (line.size() > 2) {
-                    let lineSize: Int64 = line.size()
-                    closed = (line[lineSize - 1] == multilineStrStr[0] &&
-                                line[lineSize - 2] == multilineStrStr[0] &&
-                                line[lineSize - 3] == multilineStrStr[0])
-                }
-                continue
-            }
+            // todo
+            //if (multiKey) {
+            //    if (multiBackSlash) {
+            //        multilineStrStr += line
+            //    } else {
+            //        multilineStrStr += line
+            //    }
+            //    multiBackSlash = false
+            //    var closed: Bool = false
+            //    if (multilineStrStr[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
+            //        closed = line[line.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
+            //    } else if (line.size() > 2) {
+            //        let lineSize: Int64 = line.size()
+            //        closed = (line[lineSize - 1] == multilineStrStr[0] &&
+            //                    line[lineSize - 2] == multilineStrStr[0] &&
+            //                    line[lineSize - 3] == multilineStrStr[0])
+            //    }
+            //    continue
+            //}
             if(line[0] == '[') {
                 arrayOfTables = false
                 if (line.size() == 1) {
@@ -373,20 +374,21 @@ public class Decoder {
                 i = 0
                 while(i < groups.size()) {
                     groups.set(i, groups[i].trim())
+                    // todo
                     if (groups[i].size() > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
-                        var groupStr: String = groups[i]
-                        var j: Int64 = i + 1
-                        while((groupStr[0] != groupStr[groupStr.size() - 1]) || groupStr.size() == 1){
-                            j += 1
-                            if (j > groups.size() + 2) {
-                                throw TomlDecodeErrorException("Invalid group name")
-                            }
-                            groupStr = String.join(Array<String>(groups)[i..j], delimiter: ".").trim()
-                        }
-                        groups.set(i, groupStr[1..groupStr.size() - 1])
-                        for (x in i + 1..j) {
-                            groups.remove(x)
-                        }
+                    //    var groupStr: String = groups[i]
+                    //    var j: Int64 = i + 1
+                    //    while((groupStr[0] != groupStr[groupStr.size() - 1]) || groupStr.size() == 1){
+                    //        j += 1
+                    //        if (j > groups.size() + 2) {
+                    //            throw TomlDecodeErrorException("Invalid group name")
+                    //        }
+                    //        groupStr = String.join(Array<String>(groups)[i..j], delimiter: ".").trim()
+                    //    }
+                    //    groups.set(i, groupStr[1..groupStr.size() - 1])
+                    //    for (x in i + 1..j) {
+                    //        groups.remove(x)
+                    //    }
                     } else {
                         if (!match (groupNameRe.matches(groups[i])) {
                             case Some(x) => true
@@ -470,14 +472,15 @@ public class Decoder {
         if (p.size() < 3) {
             return (-1, poffset)
         }
-        if (p[0] == '[' && (p.trim()[p.trim().size()-1] != ']' && loadArrayIsstrarray(p))) {
-            var newp = ArrayList<String>(p[1..].trim().split(','))
-            while( newp.size() > 1 && newp[newp.size()-1][0] != '"' && newp[newp.size()-1][0] != '\'') {
-                newp.insert(newp.size()-1, ",")
-            }
-            poffset = p.size() - newp.size()
-            p = newp[newp.size()-1]
-        }
+        // todo 
+        //if (p[0] == '[' && (p.trim()[p.trim().size()-1] != ']' && loadArrayIsstrarray(p))) {
+        //    var newp = ArrayList<String>(p[1..].trim().split(','))
+        //    while( newp.size() > 1 && newp[newp.size()-1][0] != '"' && newp[newp.size()-1][0] != '\'') {
+        //        newp.insert(newp.size()-1, ",")
+        //    }
+        //    poffset = p.size() - newp.size()
+        //    p = newp[newp.size()-1]
+        //}
         if (p[0] != '"' && p[0] != '\'') {
             return (-1, poffset)
         }
@@ -499,13 +502,13 @@ public class Decoder {
      * @return Type of Bool
      * @since 0.29.3
      */
-    private func loadArrayIsstrarray(a: String): Bool {
-        let astr = a[1..a.size()-1].trim()
-        if (a != "" && (a[0] == '"' || a[0] == '\'')) {
-            return true
-        }
-        return false
-    }
+    //private func loadArrayIsstrarray(a: String): Bool {
+    //    let astr = a[1..a.size()-1].trim()
+    //    if (a != "" && (a[0] == '"' || a[0] == '\'')) {
+    //        return true
+    //    }
+    //    return false
+    //}
 
     /*
      * The Function is arrayListContains<T>
@@ -789,10 +792,6 @@ public class Decoder {
                     }
                 } while (readLength == DEFAULT_BUFFER_SIZE)
                 res.toString()}()
-            case STRING => match(data) {
-                case Some(d) => d
-                case _ => throw Exception("Must specify the data")
-            }
             case _ => throw Exception("Must specify the data source first")
         }
         data
