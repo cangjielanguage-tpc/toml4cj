@@ -13,6 +13,11 @@ from std import unicode.*
 from std import time.Time
 from std import collection.HashMap
 
+/**
+ * The enum is DecodeMode
+ * @author Annlix
+ * @since 0.28.4
+ */
 public enum DecodeMode {
     | UNSPECIFIED
     | STREAM

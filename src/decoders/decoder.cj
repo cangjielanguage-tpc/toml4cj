@@ -25,6 +25,7 @@ from encoding import json.*
  * @since 0.28.4
  */
 public class Decoder {
+    /* var member stream type is Option<Stream> */
     var stream: Option<Stream> = None
     var data: Option<String> = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
@@ -91,13 +92,13 @@ public class Decoder {
         var key: String = ""
         var prevKey: String = ""
         var lineNo: Int64 = 1
-        let jsons: JsonObject = JsonObject()  // json_return
+        let jsons: JsonObject = JsonObject()
         var subjo: JsonValue = jsons
         let nilJson: JsonValue = JsonObject()
         for (i in 0..sl.size()) {
             let item: Char = sl[i]
             if(item == Symbols.CR[0] && sl[i + 1] == Symbols.LF[0]) {
-                sl[i] = chr(0x20) // ' '
+                sl[i] = chr(0x20)
                 continue
             }
             if (0 != keyName) {
@@ -164,7 +165,6 @@ public class Decoder {
                 else {
                     throw TomlDecodeErrorException("Found invalid character in key name: '" + item + "' Try quoting the key name.")
                 }
-
             }
             if (item == '\'' && openStrChar != '"') {
                 var k: Int64 = 1
@@ -296,7 +296,6 @@ public class Decoder {
             throw TomlDecodeErrorException("Key name found without value. Reached end of file.")
         }
         if (openString) {
-            // Reached EOF and have an unterminated string
             throw TomlDecodeErrorException("Unterminated string found. Reached end of file.")
         }
         var s: String = joinChar(sl)
@@ -313,7 +312,6 @@ public class Decoder {
             if (idx > 0) {
                 pos += ss[idx - 1].size() + 1
             }
-            // decoder.embed_comments(idx, currentLevel)
             if (multilineStrStr.size() == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {
                 line = line.trim()
             }
@@ -373,8 +371,6 @@ public class Decoder {
                     }
                 }
                 i = 0
-
-                        /// group
                 while(i < groups.size()) {
                     groups.set(i, groups[i].trim())
                     if (groups[i].size() > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
@@ -454,20 +450,21 @@ public class Decoder {
                 }
             }
             else if (line.contains('=')) {
-//                try {
-                    loadLine(subjo.asObject().getOrThrow(), line, multilineStrStr, multiBackSlash)
-//                } catch(e: Exception) {
-//                    throw TomlDecodeErrorException(e.toString())
-//                }
-                // if (ret is not None) {
-                //     multiKey, multiLineStr, multiBackSlash = ret
-                // }
+                loadLine(subjo.asObject().getOrThrow(), line, multilineStrStr, multiBackSlash)
             }
         }
         return jsons
     }
 
-    private func loadLineMultilineStr(pstr: String): Int64*Int64{
+    /*
+     * The Function is loadLineMultilineStr
+     *
+     * @param pstr of String)
+     * @param String) of (Int64,Int64
+     *
+     * @since 0.29.3
+     */
+    private func loadLineMultilineStr(pstr: String): (Int64, Int64){
         var p = pstr
         var poffset = 0
         if (p.size() < 3) {
@@ -494,6 +491,14 @@ public class Decoder {
     }
 
 
+    /*
+     * The Function is loadArrayIsstrarray
+     *
+     * @param a of String
+     *
+     * @return Type of Bool
+     * @since 0.29.3
+     */
     private func loadArrayIsstrarray(a: String): Bool {
         let astr = a[1..a.size()-1].trim()
         if (a != "" && (a[0] == '"' || a[0] == '\'')) {
@@ -502,6 +507,15 @@ public class Decoder {
         return false
     }
 
+    /*
+     * The Function is arrayListContains<T>
+     *
+     * @param al of ArrayList<T>
+     * @param element of T
+     *
+     * @return Type of Bool where T <: Equatable<T>
+     * @since 0.29.3
+     */
     private func arrayListContains<T>(al: ArrayList<T>, element: T) : Bool where T <: Equatable<T> {
         for(item in al) {
             if (item == element) {
@@ -511,6 +525,14 @@ public class Decoder {
         return false
     }
 
+    /*
+     * The Function is joinChar
+     *
+     * @param chars of Array<Char>
+     *
+     * @return Type of String
+     * @since 0.29.3
+     */
     private func joinChar(chars: Array<Char>): String {
         var result: String = ""
         for (c in chars) {
@@ -519,14 +541,15 @@ public class Decoder {
         result
     }
 
-
-//    private func addArrJson(ja: JsonArray, value: String): JsonArray {
-//        match ()
-//    }
-
-
-
-
+    /*
+     * The Function is loadValue
+     *
+     * @param vs of String
+     * @param strictlyValid of Bool, and the Default value is true
+     *
+     * @return Type of String
+     * @since 0.29.3
+     */
     private func loadValue(vs: String, strictlyValid!: Bool = true): String {
         var v: String = vs
         if (v.isEmpty()) {
@@ -636,6 +659,16 @@ public class Decoder {
         }
     }
 
+    /*
+     * The Function is loadInlineObject
+     *
+     * @param str of String
+     * @param obj of JsonObject
+     * @param multikey of Bool, and the Default value is false
+     * @param multiBackSlash of Bool, and the Default value is false
+     *
+     * @since 0.29.3
+     */
     private func loadInlineObject(str: String, obj: JsonObject, multikey!: Bool = false, multiBackSlash!: Bool = false){
         var candidate_groups = ArrayList<String>(str[1..str.size()-1].split(","))
         var groups = ArrayList<String>()
@@ -670,10 +703,28 @@ public class Decoder {
 
     }
 
+    /*
+     * The Function is load_unicode_escapes
+     *
+     * @param v of String
+     * @param hexbytes of Array<String>
+     * @param prefix of String
+     *
+     * @return Type of String
+     * @since 0.29.3
+     */
     private func load_unicode_escapes(v: String, hexbytes: Array<String>, prefix: String): String {
         return v
     }
     private let mypsbs = ['0', 'b', 'f', 'n', 'r', 't', '"']
+    /*
+     * The Function is getInchars
+     *
+     * @param c of Char
+     *
+     * @return Type of Bool
+     * @since 0.29.3
+     */
     private func getInchars(c: Char): Bool {
         for (m in mypsbs) {
             if (c == m) {
@@ -682,6 +733,14 @@ public class Decoder {
         }
         return false
     }
+    /*
+     * The Function is unescape
+     *
+     * @param vs of String
+     *
+     * @return Type of String
+     * @since 0.29.3
+     */
     private func unescape(vs: String): String {
         var v = vs
         var i : Int64 = 0
@@ -707,7 +766,13 @@ public class Decoder {
         return v
     }
 
-
+    /*
+     * The Function is readData
+     *
+     *
+     * @return Type of String
+     * @since 0.29.3
+     */
     private func readData(): String {
         let data: String = match(mode) {
             case STREAM => { => let s: Stream = match(stream) {
@@ -733,9 +798,14 @@ public class Decoder {
         data
     }
 
-
-
-
+    /*
+     * The Function is getSplitOnQuotes
+     *
+     * @param line of String
+     *
+     * @return Type of Collection<String>
+     * @since 0.29.3
+     */
     private func getSplitOnQuotes(line: String): Collection<String> {
         var doubuleQuoteArr: Array<String> = line.split('"')
         var quoted: Bool = false
@@ -768,6 +838,14 @@ public class Decoder {
         return quotesplits
     }
 
+    /*
+     * The Function is strictlyValidNum
+     *
+     * @param str of String
+     *
+     * @return Type of Bool
+     * @since 0.29.3
+     */
     private func strictlyValidNum(str: String): Bool {
         let n = str.trim()
         let syb = ['.', 'o', 'b', 'x']
@@ -789,7 +867,18 @@ public class Decoder {
         }
     }
 
-    private func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<String*String*Bool> {
+    /*
+     * The Function is loadLine
+     *
+     * @param jvconst of JsonObject
+     * @param line of String
+     * @param mls of String
+     * @param mbs of Bool)
+     * @param Bool) of Option<(String,String,Bool)>
+     *
+     * @since 0.29.3
+     */
+    private func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
         var multiBackSlash = mbs
         var multikey = mls
         var jv = jvconst
@@ -879,10 +968,6 @@ public class Decoder {
         } else {
             value = loadValue(pair[1], strictlyValid: strictlyValid)
         }
-//        if (jvconst.containsKey(pair[0])) {
-////            throw Exception("Duplicate keys! =${jvconst}")
-//            println(jvconst.size())
-//        }
         if (multikey.isEmpty()) {
             jvconst.put(pair[0], JsonString(value.replace("\\", "")))
             return None
@@ -890,5 +975,4 @@ public class Decoder {
             return Some((multikey, multiLineStr, multiBackSlash))
         }
     }
-
 }
