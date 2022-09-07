@@ -56,12 +56,12 @@ public class TomlTz {
     }
 
     /**
-     * The Function is utfOffset
+     * The Function is utcOffset
      *
      *
      * @since 0.29.3
      */
-    public func utfOffset() {
+    public func utcOffset() {
         return (Duration.hour(hour) + Duration.minute(minute) * sign)
     }
 
@@ -83,6 +83,6 @@ public class TomlTz {
      * @since 0.29.3
      */
     public func location(): Location {
-        Location(tzname(), utfOffset())
+        Location(tzname(), utcOffset())
     }
 }

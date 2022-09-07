@@ -13,8 +13,12 @@ main() {
         "${path2}/arrayoftables002.toml"
         ]
     let decoder: Decoder = Decoder()
-    for(i in 0..arr.size()) {
-        decoder.load(arr[i])
-//        decoder.decode()
+    try {
+        for(i in 0..arr.size) {
+            decoder.load(arr[i])
+        }
+    }catch (e: Exception) {
+        return 1
     }
+    return 0
 }
