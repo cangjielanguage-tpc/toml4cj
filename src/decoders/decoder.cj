@@ -26,8 +26,8 @@ from encoding import json.*
  */
 public class Decoder {
     /* var member stream type is Option<Stream> */
-    var stream: Option<Stream> = None
-    var data: Option<String> = None
+    var stream: ?InputStream = None
+    var data: ?String = None
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
     private let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
@@ -48,7 +48,7 @@ public class Decoder {
      * @since 0.28.4
      */
     public func load(pn: String) {
-        load(FileStream(pn))
+        load(File.openInReadOnly(pn))
     }
 
     /**
@@ -58,13 +58,13 @@ public class Decoder {
      *
      * @since 0.28.4
      */
-    public func load(file: FileStream) {
+    public func load(file: File) {
         match(data) {
-            case Some(x) => throw Exception("Can't use string decode and stream decode at the same time")
-            case None => {}
+            case None => ()
+            case _ => throw Exception("Can't use string decode and stream decode at the same time")
         }
         mode = DecodeMode.STREAM
-        if(!file.openFile()) {
+        if(!file.canRead()) {
             // Todo: Use custom exception instead it
             throw Exception("Open file failed")
         }
@@ -95,10 +95,10 @@ public class Decoder {
         let jsons: JsonObject = JsonObject()
         var subjo: JsonValue = jsons
         let nilJson: JsonValue = JsonObject()
-        for (i in 0..sl.size()) {
+        for (i in 0..sl.size) {
             let item: Char = sl[i]
             if(item == Symbols.CR[0] && sl[i + 1] == Symbols.LF[0]) {
-                sl[i] = chr(0x20)
+                sl[i] = Char(0x20)
                 continue
             }
             if (0 != keyName) {
@@ -110,7 +110,7 @@ public class Decoder {
                     if (item == openStrChar) {
                         var oddBackSlash: Bool = false
                         var k: Int64 = 1
-                        while (i >= k && sl[i - k] == chr(0x5C)) {
+                        while (i >= k && sl[i - k] == Char(0x5C)) {
                             oddBackSlash = !oddBackSlash
                             k += 1
                         }
@@ -158,7 +158,7 @@ public class Decoder {
                 }
                 if (item == '=') {
                     keyName = 0
-                    prevKey = key[..key.size() - 1].trimRight()
+                    prevKey = key[..key.size - 1].trimRight()
                     key = ""
                     dottedKey = false
                 }
@@ -243,7 +243,7 @@ public class Decoder {
             }
             if (item == Symbols.LEFT_SQUARE_BRACKET[0] && (!openString && !keyGroup && !arrayOfTables)) {
                 if (beginLine) {
-                    if (sl.size() > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                    if (sl.size > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) {
                         arrayOfTables = true
                     } else {
                         keyGroup = true
@@ -304,15 +304,15 @@ public class Decoder {
         var multilineStrStr: String = ""
         var multiBackSlash: Bool = false
         var pos: Int64 = 0
-        for (idx in 0..ss.size()) {
+        for (idx in 0..ss.size) {
             var line: String = ss[idx].trim()
             if (line.isEmpty()) {
                 continue
             }
             if (idx > 0) {
-                pos += ss[idx - 1].size() + 1
+                pos += ss[idx - 1].size + 1
             }
-            if (multilineStrStr.size() == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {
+            if (multilineStrStr.size == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {
                 line = line.trim()
             }
             if (line.equals("") && (!multiKey || multiBackSlash)) {
@@ -328,9 +328,9 @@ public class Decoder {
             //    multiBackSlash = false
             //    var closed: Bool = false
             //    if (multilineStrStr[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
-            //        closed = line[line.size() - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
-            //    } else if (line.size() > 2) {
-            //        let lineSize: Int64 = line.size()
+            //        closed = line[line.size - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
+            //    } else if (line.size > 2) {
+            //        let lineSize: Int64 = line.size
             //        closed = (line[lineSize - 1] == multilineStrStr[0] &&
             //                    line[lineSize - 2] == multilineStrStr[0] &&
             //                    line[lineSize - 3] == multilineStrStr[0])
@@ -339,16 +339,16 @@ public class Decoder {
             //}
             if(line[0] == '[') {
                 arrayOfTables = false
-                if (line.size() == 1) {
+                if (line.size == 1) {
                     throw TomlDecodeErrorException("Opening key group bracket on line by itself")
                 }
                 var splitStr: String = ""
                 if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {
                     arrayOfTables = true
-                    line = line[2..]
+                    line = line.slice(2, line.size-1)
                     splitStr = "]]"
                 } else {
-                    line = line[1..]
+                    line = line.slice(1, line.size-1)
                     splitStr = Symbols.RIGHT_SQUARE_BRACKET
                 }
                 var i: Int64 = 1
@@ -362,30 +362,30 @@ public class Decoder {
                     quoted = !quoted
                 }
                 let lineSplited: Array<String> = line.split(splitStr)
-                if (lineSplited.size() < i + 1 || lineSplited[lineSplited.size() - 1].trim() != "") {
+                if (lineSplited.size < i + 1 || lineSplited[lineSplited.size - 1].trim() != "") {
                     throw TomlDecodeErrorException("Key group not on a line by itself.")
                 }
-                let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited[..lineSplited.size() - 1], delimiter: splitStr).split("."))
-                for (index in groups.size()-1..=0:-1) {
+                let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited.slice(0, lineSplited.size-1), delimiter: splitStr).split("."))
+                for (index in groups.size-1..=0:-1) {
                     if (groups[index].equals("")) {
                         groups.remove(index)
                     }
                 }
                 i = 0
-                while(i < groups.size()) {
+                while(i < groups.size) {
                     groups.set(i, groups[i].trim())
                     // todo
-                    if (groups[i].size() > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
+                    if (groups[i].size > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
                     //    var groupStr: String = groups[i]
                     //    var j: Int64 = i + 1
-                    //    while((groupStr[0] != groupStr[groupStr.size() - 1]) || groupStr.size() == 1){
+                    //    while((groupStr[0] != groupStr[groupStr.size - 1]) || groupStr.size == 1){
                     //        j += 1
-                    //        if (j > groups.size() + 2) {
+                    //        if (j > groups.size + 2) {
                     //            throw TomlDecodeErrorException("Invalid group name")
                     //        }
                     //        groupStr = String.join(Array<String>(groups)[i..j], delimiter: ".").trim()
                     //    }
-                    //    groups.set(i, groupStr[1..groupStr.size() - 1])
+                    //    groups.set(i, groupStr[1..groupStr.size - 1])
                     //    for (x in i + 1..j) {
                     //        groups.remove(x)
                     //    }
@@ -399,14 +399,14 @@ public class Decoder {
                     }
                     i += 1
                 }
-                for(l in 0..groups.size()) {
+                for(l in 0..groups.size) {
                     let group: String = groups[l]
                     if ("".equals(group)) {
                         throw TomlDecodeErrorException("Can't have a keygroup with an empty")
                     }
                     try {
-                        subjo.asObject().getOrThrow().get(group)
-                        if (l == groups.size() - 1) {
+                        subjo.asObject().get(group)
+                        if (l == groups.size - 1) {
                             if(arrayListContains(implicitGroups, group)) {
                                 implicitGroups.removeIf({item => item == group})
                                 if (arrayOfTables) {
@@ -420,21 +420,21 @@ public class Decoder {
                         }
                     } catch(e: Exception) {
                         if (e.toString().contains("JsonException:")) {
-                            if (i != groups.size()-1) {
-                                implicitGroups.add(group)
+                            if (i != groups.size-1) {
+                                implicitGroups.append(group)
                             }
-                            subjo.asObject().getOrThrow().put(group, nilJson)
-                            if ((i == groups.size() - 1) && arrayOfTables) {
+                            subjo.asObject().put(group, nilJson)
+                            if ((i == groups.size - 1) && arrayOfTables) {
                                 // add array
                             }
                         } else {
                             throw Exception("${e.toString()}")
                         }
                     }
-                    subjo = subjo.asObject().getOrThrow().get(group)
+                    subjo = subjo.asObject().get(group)
                     if (arrayOfTables) {
                         try {
-                            // currentLevel = currentLevel[currentLevel.size() - 1]
+                            // currentLevel = currentLevel[currentLevel.size - 1]
                         } catch(e: Exception) {
 
                         }
@@ -442,7 +442,7 @@ public class Decoder {
                 }
             }
             else if (line[0] == '{') {
-                if (line[line.size() - 1] != Symbols.RIGHT_BRACE[0]) {
+                if (line[line.size - 1] != Symbols.RIGHT_BRACE[0]) {
                     throw TomlDecodeErrorException("Line break are not allowed in inline objects")
                 }
                 try {
@@ -452,7 +452,7 @@ public class Decoder {
                 }
             }
             else if (line.contains('=')) {
-                loadLine(subjo.asObject().getOrThrow(), line, multilineStrStr, multiBackSlash)
+                loadLine(subjo.asObject(), line, multilineStrStr, multiBackSlash)
             }
         }
         return jsons
@@ -469,17 +469,17 @@ public class Decoder {
     private func loadLineMultilineStr(pstr: String): (Int64, Int64){
         var p = pstr
         var poffset = 0
-        if (p.size() < 3) {
+        if (p.size < 3) {
             return (-1, poffset)
         }
         // todo 
-        //if (p[0] == '[' && (p.trim()[p.trim().size()-1] != ']' && loadArrayIsstrarray(p))) {
+        //if (p[0] == '[' && (p.trim()[p.trim().size-1] != ']' && loadArrayIsstrarray(p))) {
         //    var newp = ArrayList<String>(p[1..].trim().split(','))
-        //    while( newp.size() > 1 && newp[newp.size()-1][0] != '"' && newp[newp.size()-1][0] != '\'') {
-        //        newp.insert(newp.size()-1, ",")
+        //    while( newp.size > 1 && newp[newp.size-1][0] != '"' && newp[newp.size-1][0] != '\'') {
+        //        newp.insert(newp.size-1, ",")
         //    }
-        //    poffset = p.size() - newp.size()
-        //    p = newp[newp.size()-1]
+        //    poffset = p.size - newp.size
+        //    p = newp[newp.size-1]
         //}
         if (p[0] != '"' && p[0] != '\'') {
             return (-1, poffset)
@@ -487,10 +487,10 @@ public class Decoder {
         if (p[1] != p[0] || p[2] != p[0]) {
             return (-1, poffset)
         }
-        if (p.size() > 5 && p[p.size()-1] == p[0] && p[p.size()-2] == p[0] && p[p.size()-3] == p[0] ) {
+        if (p.size > 5 && p[p.size-1] == p[0] && p[p.size-2] == p[0] && p[p.size-3] == p[0] ) {
             return (-1, poffset)
         }
-        return (p.size()-1, poffset)
+        return (p.size-1, poffset)
     }
 
 
@@ -503,7 +503,7 @@ public class Decoder {
      * @since 0.29.3
      */
     //private func loadArrayIsstrarray(a: String): Bool {
-    //    let astr = a[1..a.size()-1].trim()
+    //    let astr = a[1..a.size-1].trim()
     //    if (a != "" && (a[0] == '"' || a[0] == '\'')) {
     //        return true
     //    }
@@ -575,8 +575,8 @@ public class Decoder {
             var testv = v[1..].split(quotechar)
             var triplequolte = false
             var triplequoltecount = 0
-            if (testv.size() > 1 && testv[0] == "" && testv[1] == "") {
-                testv = if (testv.size() > 2) {
+            if (testv.size > 1 && testv[0] == "" && testv[1] == "") {
+                testv = if (testv.size > 2) {
                     testv[2..]
                 } else {
                     Array<String>()
@@ -594,7 +594,7 @@ public class Decoder {
                 } else {
                     var oddbackslash = false
                     try {
-                        var i = tv.size() - 1
+                        var i = tv.size - 1
                         var j = tv[i]
                         while (j == '\\') {
                             oddbackslash = !oddbackslash
@@ -645,10 +645,10 @@ public class Decoder {
                 }
                 v = unescape(v)
             }
-            if (v.size() > 1 && v[1] == quotechar && (v.size() < 3 || v[1] == v[2])) {
-                v = v[2..v.size() - 2]
+            if (v.size > 1 && v[1] == quotechar && (v.size < 3 || v[1] == v[2])) {
+                v = v[2..v.size - 2]
             }
-            return v[1 .. v.size()-1]
+            return v[1 .. v.size-1]
         }
         else if (v[0] == '[') {
             throw Exception(" not support1")
@@ -673,24 +673,24 @@ public class Decoder {
      * @since 0.29.3
      */
     private func loadInlineObject(str: String, obj: JsonObject, multikey!: Bool = false, multiBackSlash!: Bool = false){
-        var candidate_groups = ArrayList<String>(str[1..str.size()-1].split(","))
+        var candidate_groups = ArrayList<String>(str[1..str.size-1].split(","))
         var groups = ArrayList<String>()
-        if (candidate_groups.size() == 1 && candidate_groups[0].trim().isEmpty()) {
+        if (candidate_groups.size == 1 && candidate_groups[0].trim().isEmpty()) {
             throw Exception("not Support3")
         }
-        while (candidate_groups.size() > 0){
+        while (candidate_groups.size > 0){
             var candidate_group: String = candidate_groups[0]
             candidate_groups.remove(0)
             let val = candidate_group.split('=', 2)
             let value = val[1].trim()
-            if (value[0] == value[value.size()-1] && (value[0] == '\'' || value[0] == '"') ||
+            if (value[0] == value[value.size-1] && (value[0] == '\'' || value[0] == '"') ||
                     "-0123456789".contains(value[0]) ||
                     (value == "true" || value == "false") ||
-                    (value[0] == '[' && value[value.size() -1] == ']') ||
-                    (value[0] == '{' && value[value.size() -1] == '}') ) {
-                groups.add(candidate_group)
+                    (value[0] == '[' && value[value.size -1] == ']') ||
+                    (value[0] == '{' && value[value.size -1] == '}') ) {
+                groups.append(candidate_group)
             }
-            else if (candidate_groups.size() > 0) {
+            else if (candidate_groups.size > 0) {
                 candidate_groups[0] = "${candidate_group},${candidate_groups[0]}"
             }
             else {
@@ -748,7 +748,7 @@ public class Decoder {
         var v = vs
         var i : Int64 = 0
         var backslash = false
-        while (i < v.size()) {
+        while (i < v.size) {
             if (backslash){
                 backslash = false
                 if (getInchars(v[i])) {
@@ -778,13 +778,14 @@ public class Decoder {
      */
     private func readData(): String {
         let data: String = match(mode) {
-            case STREAM => { => let s: Stream = match(stream) {
-                case Some(st: Stream) => st
-                case _ => throw Exception("The stream must be initialize")
-            }
+            case STREAM => { => 
+                let s: InputStream = match(stream) {
+                    case Some(st: InputStream) => st
+                    case _ => throw Exception("The stream must be initialize")
+                }
                 let res: StringBuilder = StringBuilder()
                 var readLength: Int64 = 0
-                var buffer: Array<UInt8> = Array<UInt8>(DEFAULT_BUFFER_SIZE, item: 0)
+                var buffer: Array<Byte> = Array<Byte>(DEFAULT_BUFFER_SIZE, item: 0)
                 do {
                     readLength = s.read(buffer)
                     if (0 != readLength) {
@@ -809,28 +810,28 @@ public class Decoder {
         var doubuleQuoteArr: Array<String> = line.split('"')
         var quoted: Bool = false
         let quotesplits = ArrayList<String>()
-        if (doubuleQuoteArr.size() > 1 && doubuleQuoteArr[0].contains("'")) {
+        if (doubuleQuoteArr.size > 1 && doubuleQuoteArr[0].contains("'")) {
             var singleQuotesArr: ArrayList<String> = ArrayList<String>(doubuleQuoteArr[0].split("'"))
-            doubuleQuoteArr = doubuleQuoteArr[1..]
-            while (singleQuotesArr.size() % 2 == 0 && doubuleQuoteArr.size() > 0) {
-                singleQuotesArr[singleQuotesArr.size() -1] += "\"${doubuleQuoteArr[0]}"
-                doubuleQuoteArr = if (doubuleQuoteArr.size()>1) {
-                    doubuleQuoteArr[1..]
+            doubuleQuoteArr = doubuleQuoteArr.slice(1, doubuleQuoteArr.size-1)
+            while (singleQuotesArr.size % 2 == 0 && doubuleQuoteArr.size > 0) {
+                singleQuotesArr[singleQuotesArr.size - 1] = ##""${doubuleQuoteArr[0]}"## + singleQuotesArr[singleQuotesArr.size - 1]
+                if (doubuleQuoteArr.size > 1) {
+                    doubuleQuoteArr = doubuleQuoteArr.slice(1, doubuleQuoteArr.size-1)
                 }else {
-                    Array<String>()
+                    doubuleQuoteArr = Array<String>()
                 }
                 if (singleQuotesArr.contains("'")) {
-                    let temp = singleQuotesArr[singleQuotesArr.size()-1]
+                    let temp = singleQuotesArr[singleQuotesArr.size-1]
                     singleQuotesArr.appendAll(temp.split("'"))
                 }
             }
-            quotesplits.addAll(singleQuotesArr)
+            quotesplits.appendAll(singleQuotesArr)
         }
         for ( item in doubuleQuoteArr) {
             if (quoted) {
-                quotesplits.add(item)
+                quotesplits.append(item)
             } else {
-                quotesplits.addAll(item.split("'"))
+                quotesplits.appendAll(item.split("'"))
                 quoted = !quoted
             }
         }
@@ -851,12 +852,12 @@ public class Decoder {
         return match {
             case n.isEmpty() => false
             case n[0] == '_' => false
-            case n[n.size()-1] == '_' => false
+            case n[n.size-1] == '_' => false
             case n.contains("_.") || n.contains("._") => false
-            case n.size() == 1 => true
+            case n.size == 1 => true
             case n[0] == '0' && syb.contains(n[1])  => false
             case n[0] == '+' || n[0] == '-' =>
-                return if (n.size() > 2 && n[1] == '0' && n[2] != '.') {
+                return if (n.size > 2 && n[1] == '0' && n[2] != '.') {
                 false
             } else {
                 true
@@ -877,7 +878,7 @@ public class Decoder {
      *
      * @since 0.29.3
      */
-    private func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
+    public func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
         var multiBackSlash = mbs
         var multikey = mls
         var jv = jvconst
@@ -892,13 +893,13 @@ public class Decoder {
             quoted = !quoted
         }
         var pair = line.split('=', i+1)
-        let strictlyValid: Bool = strictlyValidNum(pair[pair.size() - 1])
-        match (numberWithUnderScores.matcher(pair[pair.size() - 1]).fullMatch()) {
-            case Some(v) => pair[pair.size() - 1] = pair[pair.size() - 1].replace("_", "")
+        let strictlyValid: Bool = strictlyValidNum(pair[pair.size - 1])
+        match (numberWithUnderScores.matcher(pair[pair.size - 1]).fullMatch()) {
+            case Some(v) => pair[pair.size - 1] = pair[pair.size - 1].replace("_", "")
             case None => ()
         }
-        var pairLast: String = pair[pair.size() - 1]
-        while (pairLast.size() > 0 && (pairLast[0] != ' ' && pairLast[0] != '\t' &&
+        var pairLast: String = pair[pair.size - 1]
+        while (pairLast.size > 0 && (pairLast[0] != ' ' && pairLast[0] != '\t' &&
                 pairLast[0] != '\'' && pairLast[0] != '"' &&
                 pairLast[0] != '[' && pairLast[0] != '{' &&
                 pairLast.trim() != "true" && pairLast.trim() != "false"
@@ -909,7 +910,7 @@ public class Decoder {
             }
             throw Exception("see log") // TODO
         }
-        for (index in 0..pair.size()) {
+        for (index in 0..pair.size) {
             pair[index] = pair[index].trim()
         }
         if (pair[0].contains('.')) {
@@ -920,10 +921,10 @@ public class Decoder {
                 levels = ArrayList<String>()
                 for (quoteSplit in quoteSplits) {
                     if (quoted) {
-                        levels.add(quoteSplit)
+                        levels.append(quoteSplit)
                     } else {
                         for (arri in quoteSplit.split('.')) {
-                            levels.add(arri.trim())
+                            levels.append(arri.trim())
                         }
                     }
                     quoted = !quoted
@@ -931,22 +932,22 @@ public class Decoder {
             } else {
                 levels = ArrayList<String>(pair[0].split('.'))
             }
-            while (levels[levels.size()-1] == "") {
-                levels.remove(levels.size()-1)
+            while (levels[levels.size-1] == "") {
+                levels.remove(levels.size-1)
             }
-            for (levelIndx in 0..levels.size() - 2) {
+            for (levelIndx in 0..levels.size - 2) {
                 if (levels[levelIndx] == "") {
                     continue;
                 }
                 if (!jv.containsKey(levels[levelIndx])) {
                     jv.put(levels[levelIndx], JsonObject())
                 }
-                jv = jv.get(levels[levelIndx]).asObject().getOrThrow()
+                jv = jv.get(levels[levelIndx]).asObject()
             }
-            pair[0] = levels[levels.size()-1].trim()
+            pair[0] = levels[levels.size-1].trim()
         }
-        else if ((pair[0][0] == '"' || pair[0][0] == '\'') && pair[0][pair.size()-1] == pair[0][0]) {
-            pair[0] = unescape(pair[0][1..pair.size()-1])
+        else if ((pair[0][0] == '"' || pair[0][0] == '\'') && pair[0][pair.size-1] == pair[0][0]) {
+            pair[0] = unescape(pair[0][1..pair.size-1])
         }
         let (k_tuple, koffset_tuple) = loadLineMultilineStr(pair[1])
         var k = k_tuple
@@ -959,7 +960,7 @@ public class Decoder {
                 k -= 1
             }
             if (multiBackSlash) {
-                multiLineStr = pair[1][..pair[1].size()-1]
+                multiLineStr = pair[1][..pair[1].size-1]
             } else {
                 multiLineStr = pair[1] + "\n"
             }

@@ -11,7 +11,7 @@
 
 from toml import decoders.*
 from std import os.posix.*
-
+let str = ##"{"str":"I'm a string. \"You can quote me\". NametJo"}"##
 main() {
     var path2: String = getcwd()
     var arr: Array<String> = [
@@ -25,9 +25,14 @@ main() {
         "${path2}/string008.toml"
         ]
     let decoder: Decoder = Decoder()
-    for(i in 0..arr.size()) {
+    var result: String = ""
+    for(i in 0..arr.size) {
         decoder.load(arr[i])
         let a = decoder.decode()
-        println(a)
+        result += a.toString()
     }
+    if (!result.contains(str)) {
+        return 1
+    }
+    return 0
 }

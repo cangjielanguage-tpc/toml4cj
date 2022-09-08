@@ -11,7 +11,7 @@ main() {
         "${path2}/localdatetime001.toml"
         ]
     let decoder: Decoder = Decoder()
-    for(i in 0..arr.size()) {
+    for(i in 0..arr.size) {
         decoder.load(arr[i])
         decoder.decode()
     }
