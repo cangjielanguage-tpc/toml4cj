@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "toml",
+        "License": "MIT License",
+        "License File": "LICENSE",
+        "Version Number": "v1.0",
+        "Owner": "@Annlix @chinesebear @it-worker"
+        "Upstream URL": "https://gitee.com/HW-PLLab/toml.git",
+        "Description": "仓颉语言实现 TOML v1.0.0 的parser"
+    }
+]
