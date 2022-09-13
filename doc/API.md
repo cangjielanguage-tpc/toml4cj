@@ -16,7 +16,7 @@ public class Decoder {
     /*
      * 加载toml文件路径字符串
      *
-     * 参数 pn - toml文件路径字符串
+     * 参数 pn - toml文件路径字符串, 只限于linux环境
      */
     public func load(pn: String)
 

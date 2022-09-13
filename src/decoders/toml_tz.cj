@@ -30,7 +30,7 @@ public class TomlTz {
      *
      * @since 0.29.3
      */
-    init(tomlOffset: String) {
+    public init(tomlOffset: String) {
         if (tomlOffset == "Z") {
             rawOffset = "+00:00"
         } else {

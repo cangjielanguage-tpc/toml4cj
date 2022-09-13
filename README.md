@@ -77,7 +77,7 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 
 ### 接口说明
 
-目前只实现对 Boolean、integer、float 的解码。
+目前只实现对 Boolean、integer、string 的解码。
 
 #### class Decoder
 
