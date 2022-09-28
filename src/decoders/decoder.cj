@@ -9,7 +9,8 @@
 
 package decoders
 
-from std import io.*
+from std import fs.*
+from std import io.InputStream
 from std import collection.*
 from std import regex.*
 from std import unicode.*
@@ -18,6 +19,8 @@ from std import convert.*
 from std import time.*
 from encoding import json.*
 
+
+let regex_str = "([0-9])(_([0-9]))*"
 
 /**
  * The class is Decoder
@@ -31,7 +34,7 @@ public class Decoder {
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
     private let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
-    private let numberWithUnderScores: Regex = Regex("([0-9])(_([0-9]))*")
+    private let numberWithUnderScores: Regex = Regex(regex_str)
     /**
      * The Function is init constructor
      *
@@ -48,7 +51,7 @@ public class Decoder {
      * @since 0.28.4
      */
     public func load(pn: String) {
-        load(File.openInReadOnly(pn))
+        load(File.openRead(pn))
     }
 
     /**
@@ -67,6 +70,9 @@ public class Decoder {
         if(!file.canRead()) {
             // Todo: Use custom exception instead it
             throw Exception("Open file failed")
+        }
+        if (!file.info.path.fileName.getOrThrow().endsWith(".toml")) {
+            throw IllegalArgumentException("The format of the file is not supported.")
         }
         stream = Some(file)
     }
