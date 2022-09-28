@@ -10,6 +10,8 @@
 <img alt="" src="https://img.shields.io/badge/project-open-brightgreen" style="display: inline-block;" />
 </p>
 
+### ⚠⚠⚠ NOTE: <font style="font-weight: bolder; color: red">Deprecated!</font> Some code was deprecated, the next development work will be carried out on the next branch. See [feature_next](#https://gitee.com/HW-PLLab/toml/tree/feature_next/).
+
 ## <img alt="" src="./doc/assets/readme-icon-introduction.png" style="display: inline-block;" width=4%/> 简介
 
 TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML 被设计成可以无歧义地映射为哈希表。TOML 应该能很容易地被解析成各种语言中的数据结构。https://toml.io/cn/
