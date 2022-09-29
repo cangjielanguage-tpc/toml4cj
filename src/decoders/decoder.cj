@@ -63,14 +63,11 @@ public class Decoder {
      */
     public func load(file: File) {
         match(data) {
+            case Some(v) => throw Exception("Can't use string decode and stream decode at the same time")
             case None => ()
-            case _ => throw Exception("Can't use string decode and stream decode at the same time")
         }
         mode = DecodeMode.STREAM
-        if(!file.canRead()) {
-            // Todo: Use custom exception instead it
-            throw Exception("Open file failed")
-        }
+        if(!file.canRead()) { throw Exception("Open file failed") }
         if (!file.info.path.fileName.getOrThrow().endsWith(".toml")) {
             throw IllegalArgumentException("The format of the file is not supported.")
         }
@@ -109,17 +106,11 @@ public class Decoder {
             }
             if (0 != keyName) {
                 key += item
-                if (item == '\n') {
-                    throw TomlDecodeErrorException("Key name found without value. Reach end of line.")
-                }
+                if (item == '\n') { throw TomlDecodeErrorException("Key name found without value. Reach end of line.") }
                 if (openString) {
                     if (item == openStrChar) {
                         var oddBackSlash: Bool = false
                         var k: Int64 = 1
-                        while (i >= k && sl[i - k] == Char(0x5C)) {
-                            oddBackSlash = !oddBackSlash
-                            k += 1
-                        }
                         if (!oddBackSlash) {
                             keyName = 2
                             openString = false
@@ -137,28 +128,10 @@ public class Decoder {
                         continue
                     } else if ((item.isAsciiLetter() || item.isAsciiNumber()) || item == '_' || item == '-') {
                         continue
-                    } else if (dottedKey && sl[i - 1] == Symbols.DOT[0] && (item == Symbols.QUOTE[0] || item == Symbols.SINGLE_QUOTE[0])) {
-                        openString = true
-                        openStrChar = item
-                        continue
-                    }
+                    } 
                 }
                 else if (keyName == 2) {
                     if (item.isAsciiWhiteSpace()) {
-                        if (dottedKey) {
-                            let nextItem: Char = sl[i + 1]
-                            if ((!nextItem.isAsciiWhiteSpace()) && nextItem != Symbols.DOT[0]) {
-                                keyName = 1
-                            }
-                        }
-                        continue
-                    }
-                    if (item == Symbols.DOT[0]) {
-                        dottedKey = true
-                        let nextItem: Char = sl[i + 1]
-                        if ((!nextItem.isAsciiWhiteSpace()) && nextItem != Symbols.DOT[0]) {
-                            keyName = 1
-                        }
                         continue
                     }
                 }
@@ -261,13 +234,7 @@ public class Decoder {
             if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) {
                 if (keyGroup) {
                     keyGroup = false
-                } else if (arrayOfTables) {
-                    if(sl[i - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]) {
-                        arrayOfTables = false
-                    }
-                } else {
-                    openArr -= 1
-                }
+                } 
             }
             if (item == Symbols.LF[0]) {
                 if (openString || multilineStr) {
@@ -280,8 +247,6 @@ public class Decoder {
                             sl[i - 3] = Symbols.SPACE[0]
                         }
                     }
-                } else if (openArr != 0) {
-                    sl[i] = Symbols.SPACE[0]
                 } else {
                     beginLine = true
                 }
@@ -290,19 +255,10 @@ public class Decoder {
             else if (beginLine && sl[i] != ' ' && sl[i] != '\t') {
                 beginLine = false
                 if (!keyGroup && !arrayOfTables) {
-                    if (sl[i] == Symbols.EQUAL_SYMBOL[0]) {
-                        throw TomlDecodeErrorException("Found empty keyname")
-                    }
                     keyName = 1
                     key += item
                 }
             }
-        }
-        if (keyName != 0) {
-            throw TomlDecodeErrorException("Key name found without value. Reached end of file.")
-        }
-        if (openString) {
-            throw TomlDecodeErrorException("Unterminated string found. Reached end of file.")
         }
         var s: String = joinChar(sl)
         var ss: Array<String> = s.split(Symbols.LF)
@@ -324,25 +280,6 @@ public class Decoder {
             if (line.equals("") && (!multiKey || multiBackSlash)) {
                 continue
             }
-            // todo
-            //if (multiKey) {
-            //    if (multiBackSlash) {
-            //        multilineStrStr += line
-            //    } else {
-            //        multilineStrStr += line
-            //    }
-            //    multiBackSlash = false
-            //    var closed: Bool = false
-            //    if (multilineStrStr[0] == Symbols.LEFT_SQUARE_BRACKET[0]) {
-            //        closed = line[line.size - 1] == Symbols.RIGHT_SQUARE_BRACKET[0]
-            //    } else if (line.size > 2) {
-            //        let lineSize: Int64 = line.size
-            //        closed = (line[lineSize - 1] == multilineStrStr[0] &&
-            //                    line[lineSize - 2] == multilineStrStr[0] &&
-            //                    line[lineSize - 3] == multilineStrStr[0])
-            //    }
-            //    continue
-            //}
             if(line[0] == '[') {
                 arrayOfTables = false
                 if (line.size == 1) {
@@ -351,8 +288,6 @@ public class Decoder {
                 var splitStr: String = ""
                 if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {
                     arrayOfTables = true
-                    line = line.slice(2, line.size-1)
-                    splitStr = "]]"
                 } else {
                     line = line.slice(1, line.size-1)
                     splitStr = Symbols.RIGHT_SQUARE_BRACKET
@@ -360,45 +295,22 @@ public class Decoder {
                 var i: Int64 = 1
                 var quotesplits: ArrayList<String> = ArrayList<String>()
                 var quoted: Bool = false
-                for(quoteSplit in quotesplits) {
-                    if (!quoted && 0 <= (quoteSplit.indexOf(splitStr) ?? -1)) {
-                        break
-                    }
-                    i += quoteSplit.count(splitStr)
-                    quoted = !quoted
-                }
                 let lineSplited: Array<String> = line.split(splitStr)
                 if (lineSplited.size < i + 1 || lineSplited[lineSplited.size - 1].trim() != "") {
                     throw TomlDecodeErrorException("Key group not on a line by itself.")
                 }
                 let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited.slice(0, lineSplited.size-1), delimiter: splitStr).split("."))
                 for (index in groups.size-1..=0:-1) {
-                    if (groups[index].equals("")) {
-                        groups.remove(index)
-                    }
+                    if (groups[index].equals("")) { groups.remove(index) }
                 }
                 i = 0
                 while(i < groups.size) {
                     groups.set(i, groups[i].trim())
-                    // todo
                     if (groups[i].size > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
-                    //    var groupStr: String = groups[i]
-                    //    var j: Int64 = i + 1
-                    //    while((groupStr[0] != groupStr[groupStr.size - 1]) || groupStr.size == 1){
-                    //        j += 1
-                    //        if (j > groups.size + 2) {
-                    //            throw TomlDecodeErrorException("Invalid group name")
-                    //        }
-                    //        groupStr = String.join(Array<String>(groups)[i..j], delimiter: ".").trim()
-                    //    }
-                    //    groups.set(i, groupStr[1..groupStr.size - 1])
-                    //    for (x in i + 1..j) {
-                    //        groups.remove(x)
-                    //    }
                     } else {
                         if (!match (groupNameRe.matches(groups[i])) {
-                            case Some(x) => true
                             case None => false
+                            case Some(x) => true
                         }) {
                             throw TomlDecodeErrorException("Invalid group name")
                         }
@@ -407,22 +319,13 @@ public class Decoder {
                 }
                 for(l in 0..groups.size) {
                     let group: String = groups[l]
-                    if ("".equals(group)) {
-                        throw TomlDecodeErrorException("Can't have a keygroup with an empty")
-                    }
+                    if ("".equals(group)) { throw TomlDecodeErrorException("Can't have a keygroup with an empty") }
                     try {
                         subjo.asObject().get(group)
                         if (l == groups.size - 1) {
                             if(arrayListContains(implicitGroups, group)) {
                                 implicitGroups.removeIf({item => item == group})
-                                if (arrayOfTables) {
-                                    throw TomlDecodeErrorException("todo, An implicitly defined table can't be an array")
-                                }
-                            } else if (arrayOfTables) {
-                                // currentLevel[group].append(decoder.get_empty_table())
-                            } else {
-                                throw TomlDecodeErrorException("Group already exists")
-                            }
+                            } 
                         }
                     } catch(e: Exception) {
                         if (e.toString().contains("JsonException:")) {
@@ -438,23 +341,6 @@ public class Decoder {
                         }
                     }
                     subjo = subjo.asObject().get(group)
-                    if (arrayOfTables) {
-                        try {
-                            // currentLevel = currentLevel[currentLevel.size - 1]
-                        } catch(e: Exception) {
-
-                        }
-                    }
-                }
-            }
-            else if (line[0] == '{') {
-                if (line[line.size - 1] != Symbols.RIGHT_BRACE[0]) {
-                    throw TomlDecodeErrorException("Line break are not allowed in inline objects")
-                }
-                try {
-                    throw TomlDecodeErrorException("")
-                } catch(e: Exception) {
-                    throw TomlDecodeErrorException("")
                 }
             }
             else if (line.contains('=')) {
@@ -638,9 +524,6 @@ public class Decoder {
                         if (!getInchars(i[0]) && i[0] != 'u' && i[0] != 'U' && !backslash) {
                             throw Exception()
                         }
-                        if (backslash) {
-                            backslash = false
-                        }
                     }
                 }
                 for ( prefix in ["\\u", "\\U"]) {
@@ -689,15 +572,8 @@ public class Decoder {
             candidate_groups.remove(0)
             let val = candidate_group.split('=', 2)
             let value = val[1].trim()
-            if (value[0] == value[value.size-1] && (value[0] == '\'' || value[0] == '"') ||
-                    "-0123456789".contains(value[0]) ||
-                    (value == "true" || value == "false") ||
-                    (value[0] == '[' && value[value.size -1] == ']') ||
-                    (value[0] == '{' && value[value.size -1] == '}') ) {
+            if (value[0] == value[value.size-1] && (value[0] == '\'' || value[0] == '"') || "-0123456789".contains(value[0]) || (value == "true" || value == "false") || (value[0] == '[' && value[value.size -1] == ']') || (value[0] == '{' && value[value.size -1] == '}') ) {
                 groups.append(candidate_group)
-            }
-            else if (candidate_groups.size > 0) {
-                candidate_groups[0] = "${candidate_group},${candidate_groups[0]}"
             }
             else {
                 throw Exception("not Support4")
@@ -759,10 +635,6 @@ public class Decoder {
                 backslash = false
                 if (getInchars(v[i])) {
                     v = v[0..i-1] + v[i] + v[i+1..]
-                } else if (v[i] == '\\') {
-                    v = v[..i-1] + v[i..]
-                } else if (v[i] == 'u' || v[i] == 'U') {
-                    i +=1
                 } else {
                     throw Exception()
                 }
@@ -825,10 +697,6 @@ public class Decoder {
                     doubuleQuoteArr = doubuleQuoteArr.slice(1, doubuleQuoteArr.size-1)
                 }else {
                     doubuleQuoteArr = Array<String>()
-                }
-                if (singleQuotesArr.contains("'")) {
-                    let temp = singleQuotesArr[singleQuotesArr.size-1]
-                    singleQuotesArr.appendAll(temp.split("'"))
                 }
             }
             quotesplits.appendAll(singleQuotesArr)
@@ -905,17 +773,7 @@ public class Decoder {
             case None => ()
         }
         var pairLast: String = pair[pair.size - 1]
-        while (pairLast.size > 0 && (pairLast[0] != ' ' && pairLast[0] != '\t' &&
-                pairLast[0] != '\'' && pairLast[0] != '"' &&
-                pairLast[0] != '[' && pairLast[0] != '{' &&
-                pairLast.trim() != "true" && pairLast.trim() != "false"
-        )) {
-            match(parseFloat64(pairLast)) {
-                case Some(v) => break
-                case None => ()
-            }
-            throw Exception("see log") // TODO
-        }
+        
         for (index in 0..pair.size) {
             pair[index] = pair[index].trim()
         }
@@ -942,9 +800,7 @@ public class Decoder {
                 levels.remove(levels.size-1)
             }
             for (levelIndx in 0..levels.size - 2) {
-                if (levels[levelIndx] == "") {
-                    continue;
-                }
+                
                 if (!jv.containsKey(levels[levelIndx])) {
                     jv.put(levels[levelIndx], JsonObject())
                 }
@@ -952,9 +808,7 @@ public class Decoder {
             }
             pair[0] = levels[levels.size-1].trim()
         }
-        else if ((pair[0][0] == '"' || pair[0][0] == '\'') && pair[0][pair.size-1] == pair[0][0]) {
-            pair[0] = unescape(pair[0][1..pair.size-1])
-        }
+        
         let (k_tuple, koffset_tuple) = loadLineMultilineStr(pair[1])
         var k = k_tuple
         var koffset = koffset_tuple
@@ -967,9 +821,7 @@ public class Decoder {
             }
             if (multiBackSlash) {
                 multiLineStr = pair[1][..pair[1].size-1]
-            } else {
-                multiLineStr = pair[1] + "\n"
-            }
+            } 
             multikey = pair[0]
         } else {
             value = loadValue(pair[1], strictlyValid: strictlyValid)
