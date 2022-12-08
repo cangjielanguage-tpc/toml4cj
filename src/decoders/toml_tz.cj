@@ -41,8 +41,8 @@ public class TomlTz {
         } else {
             sign = -1
         }
-        hour = parseInt64(rawOffset[0..3]) ?? 0
-        minute = parseInt64(rawOffset[4..6]) ?? 0
+        hour = Int64.tryParse(rawOffset[0..3]) ?? 0
+        minute = Int64.tryParse(rawOffset[4..6]) ?? 0
     }
 
     /**

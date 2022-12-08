@@ -340,7 +340,7 @@ public class Decoder {
                             throw Exception("${e.toString()}")
                         }
                     }
-                    subjo = subjo.asObject().get(group)
+                    subjo = subjo.asObject().get(group).getOrThrow()
                 }
             }
             else if (line.contains('=')) {
@@ -667,7 +667,7 @@ public class Decoder {
                 do {
                     readLength = s.read(buffer)
                     if (0 != readLength) {
-                        res.append(String.fromUtf8(buffer, start: 0, length: readLength))
+                        res.append(String.fromUtf8(buffer[0..readLength]))
                     }
                 } while (readLength == DEFAULT_BUFFER_SIZE)
                 res.toString()}()
@@ -804,7 +804,7 @@ public class Decoder {
                 if (!jv.containsKey(levels[levelIndx])) {
                     jv.put(levels[levelIndx], JsonObject())
                 }
-                jv = jv.get(levels[levelIndx]).asObject()
+                jv = jv.get(levels[levelIndx]).getOrThrow().asObject()
             }
             pair[0] = levels[levels.size-1].trim()
         }
