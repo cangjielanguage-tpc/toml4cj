@@ -6,7 +6,7 @@
 from toml import decoders.*
 from std import os.posix.*
 let a = ##"{"key":"value","bare_key":"value","bare-key":"value","1234":"value"}"##
-let b = ##"{"127":{"0":{}},"1":"value",""character encoding"":"value",""ʎǝʞ"":"value","'key2'":"value","'quoted "value"'":"value"}"##
+let b = ##"{"127":{"0":{}},"1":"value","\"character encoding\"":"value","\"ʎǝʞ\"":"value","'key2'":"value","'quoted \"value\"'":"value"}"##
 main() {
     var path2: String = getcwd()
     let decoder: Decoder = Decoder()

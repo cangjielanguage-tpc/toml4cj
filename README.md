@@ -94,7 +94,7 @@ public func load(pn: String)
 public func decode()
 ```
 
-## <img alt="" src="./doc/assets/readme-icon-compile.png" style="display: inline-block;" width=4%/> 编译运行
+## <img alt="" src="./doc/assets/readme-icon-compile.png" style="display: inline-block;" width=4%/> 使用说明
 
 ### 编译
 
@@ -102,7 +102,7 @@ public func decode()
 cpm build
 ```
 
-### 示例
+## 功能示例
 
 ```shell
 from toml import decoders.*
