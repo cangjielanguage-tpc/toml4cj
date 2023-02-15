@@ -752,7 +752,7 @@ public class Decoder {
      *
      * @since 0.29.3
      */
-    public func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
+     func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
         var multiBackSlash = mbs
         var multikey = mls
         var jv = jvconst

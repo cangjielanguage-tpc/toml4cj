@@ -53,19 +53,19 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 ├── doc
 │   ├── assets
 │   ├── cjcov
+|   ├── api.md
 │   ├── design.md
 │   ├── proposal.md
 │   └── xxx_lib.md
-├── module.json
 ├── res
 │   ├── example.toml
 │   └── multiline_string.toml
 ├── src
-│   ├── decoders
-│   ├── enumerations
-│   ├── exceptions
-│   ├── parser
-│   └── utils.cj
+│   ├── decoder.cj
+│   ├── exception.cj
+│   ├── POJO.cj
+│   ├── symbols.cj
+│   └── toml_tz.cj
 └── test
     ├── HLT
     ├── LLT
@@ -74,11 +74,11 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 
 - `doc` 是库的设计文档、提案、库的使用文档、LLT 覆盖率
 - `src` 是库源码目录
-- `test` 是存放测试用例，包括 HLT 用例、LLT 用例和 UT 用例
+- `test` 是测试用例所在目录，包括 HLT 用例、LLT 用例和 UT 用例
 
 ### 接口说明
 
-目前只实现对整数、浮点数、字符串、布尔类型字面量的解码。 / TODO
+目前只实现对整数、浮点数、字符串、布尔类型字面量的解码。详情见[API](./doc/feature_api.md)
 
 #### class Decoder
 
@@ -99,10 +99,25 @@ public func decode()
 ### 编译
 
 ```shell
-cpm build
+git clone https://git@gitee.com:HW-PLLab/toml.git
+git clone https://gitee.com/HW-PLLab/testJekins.git
+cd toml
+
+cp -r ../testJekins/src/ci_test .;
+python3 ci_test/main.py build   ---> 编译
+python3 ci_test/main.py test;   ---> 执行 test/LLT 用例
 ```
 
+test/LLT 用例书写参考：https://gitee.com/HW-PLLab/cangjie-library-pages/wikis 的门禁测试脚本使用方式
+
 ## 功能示例
+
+```toml
+key = "value"
+bare_key = "value"
+bare-key = "value"
+1234 = "value"
+```
 
 ```shell
 from toml import decoders.*
@@ -115,6 +130,70 @@ main() {
 }
 ```
 
+运行结果如下:
+
+```cangjie
+{"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
+```
+
+### 提供读取TOML数据的功能示例
+
+```cangjie
+public func load(pn: String) {
+        load(File.openRead(pn))
+    }
+    
+public func load(file: File) {
+        match(data) {
+            case Some(v) => throw Exception("Can't use string decode and stream decode at the same time")
+            case None => ()
+        }
+        mode = DecodeMode.STREAM
+        if(!file.canRead()) { throw Exception("Open file failed") }
+        if (!file.info.path.fileName.getOrThrow().endsWith(".toml")) {
+            throw IllegalArgumentException("The format of the file is not supported.")
+        }
+        stream = Some(file)
+    }
+```
+
+运行结果如下:
+
+```
+提供读取文件成功
+```
+
+### 提供解析TOML数据的功能示例  （备注：  参考toml语法规约地址: [https://toml.io/cn/](https://gitee.com/link?target=https%3A%2F%2Ftoml.io%2Fcn%2F) ）
+
+```
+用例执行需要toml文件
+from toml import decoders.*
+from std import os.posix.*
+let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
+let b = ##"{"int5":"1_000","int6":"5_349_221","int7":"53_49_221","int8":"1_2_3_4_5"}"##
+main() {
+    var path2: String = getcwd()
+    let decoder: Decoder = Decoder()
+    decoder.load("${path2}/integer001.toml")
+    var json = decoder.decode()
+    if (json.toString() != a) {
+        return 1
+    }
+    decoder.load("${path2}/integer002.toml")
+    json = decoder.decode()
+    if (json.toString() != b) {
+        return 2
+    }
+    return 0
+}
+```
+
+运行结果如下:
+
+```cangjie
+{"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
+```
+
 ## <img alt="" src="./doc/assets/readme-icon-contribute.png" style="display: inline-block;" width=4%/> 参与贡献
 
-[@Annlix](https://gitee.com/Annlix) [@chinesebear](https://gitee.com/chinesebear) [@it-worker](https://gitee.com/it-worker)
+欢迎给我们提交PR，欢迎给我们提交Issue，欢迎参与任何形式的贡献。
