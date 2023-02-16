@@ -3,9 +3,9 @@
 </div>
 
 <p align="center">
-<img alt="" src="https://img.shields.io/badge/release-v0.0.1-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/release-v0.0.3-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/build-pass-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjc-v0.35.6-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjc-v0.36.4-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-94.3%25-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/project-open-brightgreen" style="display: inline-block;" />
 </p>
@@ -53,10 +53,8 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 ├── doc
 │   ├── assets
 │   ├── cjcov
-|   ├── api.md
 │   ├── design.md
-│   ├── proposal.md
-│   └── xxx_lib.md
+│   └── feature_api.md
 ├── res
 │   ├── example.toml
 │   └── multiline_string.toml
@@ -137,36 +135,38 @@ main() {
 ```
 
 ### 提供读取TOML数据的功能示例
-
+  用例执行需要toml文件
 ```cangjie
-public func load(pn: String) {
-        load(File.openRead(pn))
-    }
-    
-public func load(file: File) {
-        match(data) {
-            case Some(v) => throw Exception("Can't use string decode and stream decode at the same time")
-            case None => ()
+from toml import decoders.*
+from std import os.posix.*
+main () {
+    var path2: String = "${getcwd()}/test.properties"
+    let decoder: Decoder = Decoder()
+    try {
+        decoder.load(path2)
+    } catch (e: IllegalArgumentException) {
+        if (e.toString() == "IllegalArgumentException: The format of the file is not supported.") {
+            return 0
         }
-        mode = DecodeMode.STREAM
-        if(!file.canRead()) { throw Exception("Open file failed") }
-        if (!file.info.path.fileName.getOrThrow().endsWith(".toml")) {
-            throw IllegalArgumentException("The format of the file is not supported.")
-        }
-        stream = Some(file)
+        return 1
     }
+    let a = decoder.decode()
+    println(a)
+    return 1
+}
+
 ```
 
 运行结果如下:
 
 ```
-提供读取文件成功
+return 1
 ```
 
-### 提供解析TOML数据的功能示例  （备注：  参考toml语法规约地址: [https://toml.io/cn/](https://gitee.com/link?target=https%3A%2F%2Ftoml.io%2Fcn%2F) ）
-
+### 提供解析TOML数据的功能示例  
+（备注：  参考toml语法规约地址: [https://toml.io/cn/](https://gitee.com/link?target=https%3A%2F%2Ftoml.io%2Fcn%2F) ）
+ 用例执行需要toml文件
 ```
-用例执行需要toml文件
 from toml import decoders.*
 from std import os.posix.*
 let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
