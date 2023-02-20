@@ -19,9 +19,6 @@ from std import convert.*
 from std import time.*
 from encoding import json.*
 
-
-let regex_str = "([0-9])(_([0-9]))*"
-
 /**
  * The class is Decoder
  * @author Annlix
@@ -34,7 +31,7 @@ public class Decoder {
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
     private let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
-    private let numberWithUnderScores: Regex = Regex(regex_str)
+    private let numberWithUnderScores: Regex = Regex("^\\d")
     /**
      * The Function is init constructor
      *
