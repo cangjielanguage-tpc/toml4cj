@@ -1,0 +1,24 @@
+##当前版本暂不支持
+## 裸键
+integers = [ 1, 2, 3 ]
+colors = [ "red", "yellow", "green" ]
+nested_arrays_of_ints = [ [ 1, 2 ], [3, 4, 5] ]
+nested_mixed_array = [ [ 1, 2 ], ["a", "b", "c"] ]
+string_array = [ "all", 'strings', """are the same""", '''type''' ]
+
+#array__empty = []  # empty array
+
+
+## ""键
+integers2 = [
+  1, 2, 3
+]
+
+integers3 = [
+                1,
+                2,
+                132
+               ]
+
+
+## the end !!

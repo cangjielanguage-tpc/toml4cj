@@ -1,0 +1,27 @@
+### string_complex
+str_4 = """overLarge_string>> hafduuwcvjoqwiehfcbbjaydscvliwuegcvb\
+            kajhsdv cuasyevc qawikuwegvcujhsdgckjsagdfvcvwhetoqtyewvhjasgxcftb\ 
+            uyg  aoweuyfghavshicusdgviuajasydvgyuasftdvboaiydfcluyfy || jiducg &&hh\ 
+            【嘿哈 ？】
+        """
+
+## ""键
+"str_5 " = """
+              \"str\" is String ::> 
+             go ahead =>
+          """
+"${str4}" = """
+          仓颉测试，磨人的小妖精、
+          哈嘿  呦吼
+         """
+
+
+## 点分隔键
+obj.m1 = """ 
+         """
+obj.m2 =  #""#
+obj . quoted.value = """
+                     Hello,
+                         Cangjie
+                      Lang
+                      """

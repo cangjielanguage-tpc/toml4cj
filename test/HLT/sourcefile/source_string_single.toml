@@ -1,0 +1,19 @@
+
+## 裸键
+str_1 = "99 > 10"
+str_2 = "true"
+str_3 = "\" \" \t\r\n"
+###超长字符序列
+str_4 = "overLarge_string>> hafduuwcvjoqwiehfcbbjaydscvliwuegcvbkajhsdv cuasyevc qawikuwegvcujhsdgckjsagdfvcvwhetoqtyewvhjasgxcftb uyg  aoweuyfghavshicusdgviuajasydvgyuasftdvboaiydfcluyfyucvbsadghiksyugv bcakueydvfoaus? hisduvgiuiksudvgipwbv uy || jiducg && jfoisaduvgbjicweugisugapgvciudbvroewbygvasyvg ipwurvfbqwaouy..] [hkaudjascdlsdvjsdvcaljdc hu>> end^_^ 哈嘿 \" \" 【呦吼“】 "
+            
+str_5 = "\"str\" is String ::> "
+str6 = " cjtest xxx"
+#127.0.0.1 = '${str4}value' #以点分隔键对待
+character_encoding = "value"
+#ʎǝʞ = "value"
+empty = ""
+
+## 点分隔键 暂时不支持
+#obj .m1 = "#\"\"#" 
+#obj . m2 = 'cv 大法' 
+#obj ."ʎǝʞ" = "value"

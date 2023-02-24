@@ -1,0 +1,67 @@
+######:>> combination
+## 裸键
+str_1 = "99 > 10"
+str_2 = "true"
+str_3 = "\" \" \t\r\n"
+###超长字符序列
+str_4 = "overLarge_string>> hafduuwcvjoqwiehfcbbjaydscvliwuegcvbkajhsdv cuasyevc qawikuwegvcujhsdgckjsagdfvcvwhetoqtyewvhjasgxcftb uyg  aoweuyfghavshicusdgviuajasydvgyuasftdvboaiydfcluyfyucvbsadghiksyugv bcakueydvfoaus? hisduvgiuiksudvgipwbv uy || jiducg && jfoisaduvgbjicweugisugapgvciudbvroewbygvasyvg ipwurvfbqwaouy..] [hkaudjascdlsdvjsdvcaljdc hu>> end^_^ 哈嘿 \" \" 【呦吼“】 "
+            
+str_5 = "\"str\" is String ::> "
+str6 = " cjtest xxx"
+#127.0.0.1 = '${str4}value' #以点分隔键对待
+character_encoding = "value"
+#ʎǝʞ = "value"
+empty = ""
+
+
+###>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>###
+## 裸键
+#bool_1 = 99 > 10
+bool_2 = true
+bool_3 = false
+
+## ""键
+bool_4 = true
+#'bool_5' = false
+#"ff " = true
+
+###>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>###
+char_1 = 'a'
+char_2 = 'B'
+char_3 = '\\'
+
+## ""键
+char_4 = '\n'
+char_5 = '\r'
+char_6 = '\t'
+char_7 = '\u{4f60}' #> 您
+
+###>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>###
+flt1 = +1.0
+flt2 = 3.1415
+flt3 = -0.01
+
+# 指数
+flt4 = 5e+22
+flt5 = 1e06
+flt6 = -2E-2
+
+# 都有
+flt7 = 6.626e-34
+###>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>###
+## 裸键
+int1 = +99
+int2 = 42
+int3 = -171255587
+int4 = 0b10100010 # 十进制：162
+
+## ""键
+int5 = 1_000
+int6 = 5_349_221 # 对于大数，可以在数字之间用下划线来增强可读性
+int7 = 53_49_221  # 印度记数体系分组
+-12 = 1_2_3_4_5  # 合法但不鼓励
+trueFlag = 12
+int8 = 0o242 # 八进制对应十进制：162
+###>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>###
+
+
