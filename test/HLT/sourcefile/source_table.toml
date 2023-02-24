@@ -1,0 +1,23 @@
+##当前版本暂不支持
+#[table]
+
+[table_1]
+key1 = "some string"
+key2 = 123
+str_3 = 'J'
+
+
+[table-2]
+    key1 = "another string"
+    key2 = 456
+
+[fruits.physical]  
+    color = "red"
+    shap = "squar"
+[fruits.varieties] 
+name = "red delicious"
+
+[dog."tater.man"]
+    ype.name = "pug"
+    
+## the end !!

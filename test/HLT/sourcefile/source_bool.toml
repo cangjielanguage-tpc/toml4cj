@@ -1,0 +1,15 @@
+
+## 裸键
+#bool_1 = 99 > 10
+bool_2 = true
+bool_3 = false
+
+## ""键
+bool_4 = true
+#'bool_5' = false
+#"ff " = true
+
+## 点分隔键
+#obj.m1 = 2**31 -1 < 10  
+#obj .m2 = false
+#obj . m3 = true

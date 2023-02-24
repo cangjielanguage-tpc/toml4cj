@@ -1,0 +1,13 @@
+
+## 裸键
+char_1 = 'a'
+char_2 = 'B'
+char_3 = '\\'
+
+## ""键
+char_4 = '\n'
+char_5 = '\r'
+char_6 = '\t'
+char_7 = '\u{4f60}' #> 您
+
+## the end !!
