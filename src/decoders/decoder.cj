@@ -48,9 +48,12 @@ public class Decoder {
      * @since 0.28.4
      */
     public func load(pn: String) {
+        let arr = pn.split("/")
+        if (!arr[arr.size - 1].contains(".") || arr[arr.size - 1].size == 0) {
+            throw IllegalArgumentException("The format of the file is not supported.")
+        }
         load(File.openRead(pn))
     }
-    
     /**
      * The Function is load
      *
