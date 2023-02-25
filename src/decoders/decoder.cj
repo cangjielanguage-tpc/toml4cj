@@ -39,7 +39,7 @@ public class Decoder {
      */
     public init() {
     }
-
+    
     /**
      * The Function is load
      *
@@ -50,7 +50,7 @@ public class Decoder {
     public func load(pn: String) {
         load(File.openRead(pn))
     }
-
+    
     /**
      * The Function is load
      *
@@ -70,7 +70,7 @@ public class Decoder {
         }
         stream = Some(file)
     }
-
+    
     /**
      * The Function is decode
      *
@@ -125,7 +125,7 @@ public class Decoder {
                         continue
                     } else if ((item.isAsciiLetter() || item.isAsciiNumber()) || item == '_' || item == '-') {
                         continue
-                    } 
+                    }
                 }
                 else if (keyName == 2) {
                     if (item.isAsciiWhiteSpace()) {
@@ -152,7 +152,7 @@ public class Decoder {
                         }
                     }
                 } catch (e: IndexOutOfBoundsException) {
-
+                
                 }
                 if (k == 3) {
                     multilineStr = !multilineStr
@@ -185,7 +185,7 @@ public class Decoder {
                         }
                     }
                 } catch(e: IndexOutOfBoundsException) {
-
+                
                 }
                 if (!oddBackSlash) {
                     if (tripQuote) {
@@ -231,7 +231,7 @@ public class Decoder {
             if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) {
                 if (keyGroup) {
                     keyGroup = false
-                } 
+                }
             }
             if (item == Symbols.LF[0]) {
                 if (openString || multilineStr) {
@@ -322,7 +322,7 @@ public class Decoder {
                         if (l == groups.size - 1) {
                             if(arrayListContains(implicitGroups, group)) {
                                 implicitGroups.removeIf({item => item == group})
-                            } 
+                            }
                         }
                     } catch(e: Exception) {
                         if (e.toString().contains("JsonException:")) {
@@ -346,7 +346,7 @@ public class Decoder {
         }
         return jsons
     }
-
+    
     /*
      * The Function is loadLineMultilineStr
      *
@@ -361,15 +361,6 @@ public class Decoder {
         if (p.size < 3) {
             return (-1, poffset)
         }
-        // todo 
-        //if (p[0] == '[' && (p.trim()[p.trim().size-1] != ']' && loadArrayIsstrarray(p))) {
-        //    var newp = ArrayList<String>(p[1..].trim().split(','))
-        //    while( newp.size > 1 && newp[newp.size-1][0] != '"' && newp[newp.size-1][0] != '\'') {
-        //        newp.insert(newp.size-1, ",")
-        //    }
-        //    poffset = p.size - newp.size
-        //    p = newp[newp.size-1]
-        //}
         if (p[0] != '"' && p[0] != '\'') {
             return (-1, poffset)
         }
@@ -381,24 +372,7 @@ public class Decoder {
         }
         return (p.size-1, poffset)
     }
-
-
-    /*
-     * The Function is loadArrayIsstrarray
-     *
-     * @param a of String
-     *
-     * @return Type of Bool
-     * @since 0.29.3
-     */
-    //private func loadArrayIsstrarray(a: String): Bool {
-    //    let astr = a[1..a.size-1].trim()
-    //    if (a != "" && (a[0] == '"' || a[0] == '\'')) {
-    //        return true
-    //    }
-    //    return false
-    //}
-
+    
     /*
      * The Function is arrayListContains<T>
      *
@@ -416,7 +390,7 @@ public class Decoder {
         }
         return false
     }
-
+    
     /*
      * The Function is joinChar
      *
@@ -432,7 +406,7 @@ public class Decoder {
         }
         result
     }
-
+    
     /*
      * The Function is loadValue
      *
@@ -442,7 +416,7 @@ public class Decoder {
      * @return Type of String
      * @since 0.29.3
      */
-    private func loadValue(vs: String, strictlyValid!: Bool = true): String {
+    private func loadValue(vs: String): String {
         var v: String = vs
         if (v.isEmpty()) {
             throw Exception()
@@ -503,7 +477,7 @@ public class Decoder {
                                 triplequoltecount = 0
                             }
                         }
-
+                        
                     }
                 }
             }
@@ -547,7 +521,7 @@ public class Decoder {
             return v
         }
     }
-
+    
     /*
      * The Function is loadInlineObject
      *
@@ -558,7 +532,7 @@ public class Decoder {
      *
      * @since 0.29.3
      */
-    private func loadInlineObject(str: String, obj: JsonObject, multikey!: Bool = false, multiBackSlash!: Bool = false){
+    private func loadInlineObject(str: String, obj: JsonObject, multiBackSlash!: Bool = false){
         var candidate_groups = ArrayList<String>(str[1..str.size-1].split(","))
         var groups = ArrayList<String>()
         if (candidate_groups.size == 1 && candidate_groups[0].trim().isEmpty()) {
@@ -582,9 +556,9 @@ public class Decoder {
                 case None => ()
             }
         }
-
+        
     }
-
+    
     /*
      * The Function is load_unicode_escapes
      *
@@ -643,7 +617,7 @@ public class Decoder {
         }
         return v
     }
-
+    
     /*
      * The Function is readData
      *
@@ -653,7 +627,7 @@ public class Decoder {
      */
     private func readData(): String {
         let data: String = match(mode) {
-            case STREAM => { => 
+            case STREAM => { =>
                 let s: InputStream = match(stream) {
                     case Some(st: InputStream) => st
                     case _ => throw Exception("The stream must be initialize")
@@ -672,7 +646,7 @@ public class Decoder {
         }
         data
     }
-
+    
     /*
      * The Function is getSplitOnQuotes
      *
@@ -708,7 +682,7 @@ public class Decoder {
         }
         return quotesplits
     }
-
+    
     /*
      * The Function is strictlyValidNum
      *
@@ -737,7 +711,7 @@ public class Decoder {
             case _ => true
         }
     }
-
+    
     /*
      * The Function is loadLine
      *
@@ -749,7 +723,7 @@ public class Decoder {
      *
      * @since 0.29.3
      */
-     func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
+    func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
         var multiBackSlash = mbs
         var multikey = mls
         var jv = jvconst
@@ -818,10 +792,10 @@ public class Decoder {
             }
             if (multiBackSlash) {
                 multiLineStr = pair[1][..pair[1].size-1]
-            } 
+            }
             multikey = pair[0]
         } else {
-            value = loadValue(pair[1], strictlyValid: strictlyValid)
+            value = loadValue(pair[1])
         }
         if (multikey.isEmpty()) {
             jvconst.put(pair[0], JsonString(value.replace("\\", "")))
