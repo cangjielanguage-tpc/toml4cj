@@ -19,6 +19,12 @@ from std import convert.*
 from std import time.*
 from encoding import json.*
 
+enum DecodeMode {
+    | UNSPECIFIED
+    | STREAM
+    | STRING
+}
+
 /**
  * The class is Decoder
  * @author Annlix
