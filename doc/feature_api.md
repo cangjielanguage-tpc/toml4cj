@@ -1,4 +1,4 @@
-## toml 库
+## toml4cj 库
 
 ### 介绍
 TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML 被设计成可以无歧义地映射为哈希表。TOML 应该能很容易地被解析成各种语言中的数据结构。
@@ -59,7 +59,7 @@ public class Decoder {
 
 代码如下：
 
-```toml
+```toml4cj
 key = "value"
 bare_key = "value"
 bare-key = "value"
@@ -67,7 +67,7 @@ bare-key = "value"
 ```
 
 ```cangjie
-from toml import decoders.*
+from toml4cj import decoders.*
 
 main() {
     let decoder: Decoder = Decoder()
@@ -137,7 +137,7 @@ public class Decoder {
 
 代码如下：
 
-```toml
+```toml4cj
 key = "value"
 bare_key = "value"
 bare-key = "value"
@@ -145,7 +145,7 @@ bare-key = "value"
 ```
 
 ```cangjie
-from toml import decoders.*
+from toml4cj import decoders.*
 
 main() {
     let decoder: Decoder = Decoder()
@@ -222,7 +222,7 @@ public class TomlTz {
 
 代码如下：
 
-```toml
+```toml4cj
 key = "value"
 bare_key = "value"
 bare-key = "value"
@@ -230,7 +230,7 @@ bare-key = "value"
 ```
 
 ```cangjie
-from toml import decoders.*
+from toml4cj import decoders.*
 
 main() {
     let decoder: Decoder = Decoder()

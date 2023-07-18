@@ -90,14 +90,14 @@ from serialization import serialization.*
 
 ###### 5.2 展示示例
 integer002.toml文件
-```toml
+```toml4cj
 key = "value"
 bare_key = "value"
 bare-key = "value"
 1234 = "value"
 ```
 ```cangjie
-from toml import decoders.*
+from toml4cj import decoders.*
 
 main() {
     let decoder: Decoder = Decoder()

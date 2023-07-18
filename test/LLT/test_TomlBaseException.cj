@@ -1,7 +1,7 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml import decoders.*
+from toml4cj import decoders.*
 
 main() {
     var tomlBaseException1 = TomlBaseException()

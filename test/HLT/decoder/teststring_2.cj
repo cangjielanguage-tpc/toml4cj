@@ -1,7 +1,7 @@
-//3rd_party_lib:toml/build/toml
+//3rd_party_lib:toml4cj/build/toml4cj
 //data_file:../sourcefile/source_string_complex.toml
 
-from toml import decoders.*
+from toml4cj import decoders.*
 from std import os.posix.*
 from std import unittest.*
 from std import fs.*
@@ -30,8 +30,9 @@ public class DecoderTest{
             strData = jsonObj.toString()
             var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
         }catch(e1:Exception){
-             @Assert(e1.toString().contains("Exception: Found invalid character in key name: '.' Try quoting the key name."),true)
-             returnFlag = 0
+            //e1.printStackTrace()
+            @Assert(e1.toString().contains("Empty value is invalid"),true)
+            returnFlag = 0
         }
         @Assert(returnFlag,0)
     }
