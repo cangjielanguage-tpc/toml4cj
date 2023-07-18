@@ -4,7 +4,7 @@
 
 /**
  * @file
- * This file is about toml exception
+ * This file is about toml4cj exception
  */
 
 package decoders

@@ -97,9 +97,9 @@ public func decode()
 ### 编译
 
 ```shell
-git clone https://git@gitee.com:HW-PLLab/toml.git
+git clone https://gitee.com/HW-PLLab/toml4cj.git
 git clone https://gitee.com/HW-PLLab/testJekins.git
-cd toml
+cd toml4cj
 
 cp -r ../testJekins/src/ci_test .;
 python3 ci_test/main.py build   ---> 编译
@@ -110,7 +110,7 @@ test/LLT 用例书写参考：https://gitee.com/HW-PLLab/cangjie-library-pages/w
 
 ## 功能示例
 
-```toml
+```toml4cj
 key = "value"
 bare_key = "value"
 bare-key = "value"
@@ -118,7 +118,7 @@ bare-key = "value"
 ```
 
 ```shell
-from toml import decoders.*
+from toml4cj import decoders.*
 
 main() {
     let decoder: Decoder = Decoder()
@@ -137,7 +137,7 @@ main() {
 ### 提供读取TOML数据的功能示例
   用例执行需要toml文件
 ```cangjie
-from toml import decoders.*
+from toml4cj import decoders.*
 from std import os.posix.*
 main () {
     var path2: String = "${getcwd()}/test.properties"
@@ -167,7 +167,7 @@ return 1
 （备注：  参考toml语法规约地址: [https://toml.io/cn/](https://gitee.com/link?target=https%3A%2F%2Ftoml.io%2Fcn%2F) ）
  用例执行需要toml文件
 ```
-from toml import decoders.*
+from toml4cj import decoders.*
 from std import os.posix.*
 let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
 let b = ##"{"int5":"1_000","int6":"5_349_221","int7":"53_49_221","int8":"1_2_3_4_5"}"##

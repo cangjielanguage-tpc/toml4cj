@@ -37,7 +37,11 @@ public class Decoder {
     var mode: DecodeMode = DecodeMode.UNSPECIFIED
     static let DEFAULT_BUFFER_SIZE = 2 << 11  // 4096
     private let groupNameRe: Regex = Regex("^[A-Za-z0-9_-]+$")
-    private let numberWithUnderScores: Regex = Regex("^\\d")
+
+    private let numberWithUnderScores: Regex = Regex("([0-9])(_([0-9]))*")
+
+    private let TIME_RE: Regex = Regex("([0-9]{2}):([0-9]{2}):([0-9]{2})(\\.([0-9]{3,6}))?")
+
     /**
      * The Function is init constructor
      *
@@ -112,7 +116,9 @@ public class Decoder {
             }
             if (0 != keyName) {
                 key += item
-                if (item == '\n') { throw TomlDecodeErrorException("Key name found without value. Reach end of line.") }
+                if (item == '\n') {
+                    throw TomlDecodeErrorException("Key name found without value. Reach end of line.")
+                }
                 if (openString) {
                     if (item == openStrChar) {
                         var oddBackSlash: Bool = false
@@ -134,10 +140,28 @@ public class Decoder {
                         continue
                     } else if ((item.isAsciiLetter() || item.isAsciiNumber()) || item == '_' || item == '-') {
                         continue
+                    } else if (dottedKey && sl[i - 1] == '.' && (item == '\"' || item == '\'')) {
+                        openString = true
+                        openStrChar = item
+                        continue
                     }
                 }
                 else if (keyName == 2) {
                     if (item.isAsciiWhiteSpace()) {
+                        if (dottedKey) {
+                            let nextItem: Char = sl[i + 1]
+                            if (!nextItem.isAsciiWhiteSpace() && nextItem != '.') {
+                                keyName = 1
+                            }
+                        }
+                        continue
+                    }
+                    if (item == '.') {
+                        dottedKey = true
+                        let nextItem: Char = sl[i + 1]
+                        if (!nextItem.isAsciiWhiteSpace() && nextItem != '.') {
+                            keyName = 1
+                        }
                         continue
                     }
                 }
@@ -148,7 +172,8 @@ public class Decoder {
                     dottedKey = false
                 }
                 else {
-                    throw TomlDecodeErrorException("Found invalid character in key name: '" + item + "' Try quoting the key name.")
+                    let err: String="Found invalid character in key name: '${item}' Try quoting the key name. i = ${i}"
+                    throw TomlDecodeErrorException(err)
                 }
             }
             if (item == '\'' && openStrChar != '"') {
@@ -161,7 +186,7 @@ public class Decoder {
                         }
                     }
                 } catch (e: IndexOutOfBoundsException) {
-                
+                    ()
                 }
                 if (k == 3) {
                     multilineStr = !multilineStr
@@ -194,7 +219,7 @@ public class Decoder {
                         }
                     }
                 } catch(e: IndexOutOfBoundsException) {
-                
+                    ()
                 }
                 if (!oddBackSlash) {
                     if (tripQuote) {
@@ -228,7 +253,7 @@ public class Decoder {
             }
             if (item == Symbols.LEFT_SQUARE_BRACKET[0] && (!openString && !keyGroup && !arrayOfTables)) {
                 if (beginLine) {
-                    if (sl.size > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                    if (sl.size > (i + 1) && (sl[i + 1]) == Symbols.LEFT_SQUARE_BRACKET[0]) { // [
                         arrayOfTables = true
                     } else {
                         keyGroup = true
@@ -237,12 +262,16 @@ public class Decoder {
                     openArr += 1
                 }
             }
-            if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) {
+            if (item == Symbols.RIGHT_SQUARE_BRACKET[0] && !openString) { // ]
                 if (keyGroup) {
                     keyGroup = false
+                } else if (arrayOfTables) {
+                    if (sl[i - 1] == ']') { arrayOfTables = false }
+                } else {
+                    openArr -= 1
                 }
             }
-            if (item == Symbols.LF[0]) {
+            if (item == Symbols.LF[0]) {// \n
                 if (openString || multilineStr) {
                     if (!multilineStr) {
                         throw TomlDecodeErrorException("Unbalanced quotes")
@@ -253,6 +282,8 @@ public class Decoder {
                             sl[i - 3] = Symbols.SPACE[0]
                         }
                     }
+                } else if (openArr != 0) {
+                    sl[i] = ' '
                 } else {
                     beginLine = true
                 }
@@ -261,12 +292,14 @@ public class Decoder {
             else if (beginLine && sl[i] != ' ' && sl[i] != '\t') {
                 beginLine = false
                 if (!keyGroup && !arrayOfTables) {
+                    if (sl[i] == '=') { throw TomlDecodeErrorException("Found empty keyName. ${original}, i = ${i}") }
                     keyName = 1
                     key += item
                 }
             }
         }
-        var s: String = joinChar(sl)
+        var s: String = String(sl)
+
         var ss: Array<String> = s.split(Symbols.LF)
         var multiKey: Bool = false
         var multilineStrStr: String = ""
@@ -274,77 +307,170 @@ public class Decoder {
         var pos: Int64 = 0
         for (idx in 0..ss.size) {
             var line: String = ss[idx].trim()
+
             if (line.isEmpty()) {
                 continue
             }
             if (idx > 0) {
                 pos += ss[idx - 1].size + 1
             }
-            if (multilineStrStr.size == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {
+            if (multilineStrStr.size == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {// \n
                 line = line.trim()
             }
             if (line.equals("") && (!multiKey || multiBackSlash)) {
                 continue
             }
+
+            if (multiKey) {
+                if (multiBackSlash) {
+                    multilineStrStr += line
+                } else {
+                    multilineStrStr += line
+                }
+                multiBackSlash = false
+                var closed: Bool = false
+                if (multilineStrStr[0] == '[') {
+                    closed = line[line.size - 1] == ']'
+                } else if (line.size > 2) {
+                    closed = (line[line.size - 1] == multilineStrStr[0] &&
+                              line[line.size - 2] == multilineStrStr[0] &&
+                              line[line.size - 3] == multilineStrStr[0])
+                }
+                if (closed) {
+                    var value: ArrayList<String> = ArrayList<String>()
+                    var vtype: String = ""
+                    try {
+                        let res: (ArrayList<String>, String) = loadValue(multilineStrStr)
+                        value = res[0]
+                        vtype = res[1]
+                    } catch (e: Exception) {
+                        throw TomlDecodeErrorException("${e.message}. ${original}, pos = ${pos}")
+                    }
+                    if (vtype.equals("array")) {
+                        let ja: JsonArray = JsonArray()
+                        for (str in value) {
+                            ja.add(JsonValue.fromStr(str))
+                        }
+                        subjo.asObject().put(multiKey.toString(), ja)
+                    } else {
+                        subjo.asObject().put(multiKey.toString(), JsonValue.fromStr(value[0]))
+                    }
+
+                    multiKey = false
+                    multilineStrStr = ""
+                } else {
+                    var k: Int64 = multilineStrStr.size - 1
+                    while (k > -1 && multilineStrStr[k] == '\\') {
+                        multiBackSlash = !multiBackSlash
+                        k -= 1
+                    }
+                    if (multiBackSlash) {
+                        multilineStrStr = multilineStrStr.slice(0, multilineStrStr.size - 1)
+                    } else {
+                        multilineStrStr += "\n"
+                    }
+                }
+                continue
+            }
+
             if(line[0] == '[') {
                 arrayOfTables = false
                 if (line.size == 1) {
                     throw TomlDecodeErrorException("Opening key group bracket on line by itself")
                 }
                 var splitStr: String = ""
-                if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {
+                if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {// [
                     arrayOfTables = true
+                    line = line.slice(2, line.size-2)
+                    splitStr = "]]"
                 } else {
                     line = line.slice(1, line.size-1)
-                    splitStr = Symbols.RIGHT_SQUARE_BRACKET
+                    splitStr = Symbols.RIGHT_SQUARE_BRACKET // ]
                 }
                 var i: Int64 = 1
-                var quotesplits: ArrayList<String> = ArrayList<String>()
+
+                var quotesplits: ArrayList<String> = (getSplitOnQuotes(line) as ArrayList<String>).getOrThrow()
+
                 var quoted: Bool = false
+
+                for (quotesplit in quotesplits) {
+                    if (!quoted && quotesplit.contains(splitStr)) {
+                        break
+                    }
+                    i += quotesplit.count(splitStr)
+                    quoted = !quoted
+                }
+
                 let lineSplited: Array<String> = line.split(splitStr)
+
                 if (lineSplited.size < i + 1 || lineSplited[lineSplited.size - 1].trim() != "") {
                     throw TomlDecodeErrorException("Key group not on a line by itself.")
                 }
                 let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited.slice(0, lineSplited.size-1), delimiter: splitStr).split("."))
+
                 for (index in groups.size-1..=0:-1) {
                     if (groups[index].equals("")) { groups.remove(index) }
                 }
+
                 i = 0
                 while(i < groups.size) {
                     groups.set(i, groups[i].trim())
                     if (groups[i].size > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
+
+                        var groupStr: String = groups[i]
+                        var j: Int64 = i + 1
+                        while (!(groupStr[0] == groupStr[groupStr.size - 1]) || groupStr.size == 1) {
+                            j += 1
+                            if (j > groups.size + 2) {
+                                let err = "Invalid group name '${groupStr}' Something went wrong. pos = ${pos}.\n" +
+                                        original
+                                throw TomlDecodeErrorException(err)
+                            }
+                            groupStr = String.join(groups.slice(i..j).toArray(), delimiter: ".").trim()
+                        }
+                        groups[i] = groupStr.slice(1, groupStr.size - 2)
                     } else {
                         if (!match (groupNameRe.matches(groups[i])) {
                             case None => false
                             case Some(x) => true
                         }) {
-                            throw TomlDecodeErrorException("Invalid group name")
+                            let err = "Invalid group name '${groups[i]}'. Try quoting it. pos = ${pos}.\n ${original}"
+                            throw TomlDecodeErrorException(err)
                         }
                     }
                     i += 1
                 }
+
+                subjo = jsons
                 for(l in 0..groups.size) {
                     let group: String = groups[l]
                     if ("".equals(group)) { throw TomlDecodeErrorException("Can't have a keygroup with an empty") }
                     try {
-                        subjo.asObject().get(group)
+                        subjo.asObject().get(group).getOrThrow()
                         if (l == groups.size - 1) {
-                            if(arrayListContains(implicitGroups, group)) {
+                            if (arrayListContains(implicitGroups, group)) {
                                 implicitGroups.removeIf({item => item == group})
+                                if (arrayOfTables) {
+                                    let err="An implicitly defined table can't be an array. pos = ${pos}.\n ${original}"
+                                    throw TomlDecodeErrorException(err)
+                                }
+                            } else if (arrayOfTables) {
+                                subjo.asObject().get(group).getOrThrow().asObject().put(group, getEmptyTable())
+                            } else {
+                                let err="What? ${group} already exists? ${subjo.toString()}. pos = ${pos}.\n" + original
+                                throw TomlDecodeErrorException(err)
                             }
                         }
                     } catch(e: Exception) {
-                        if (e.toString().contains("JsonException:")) {
-                            if (i != groups.size-1) {
-                                implicitGroups.append(group)
-                            }
-                            subjo.asObject().put(group, nilJson)
-                            if ((i == groups.size - 1) && arrayOfTables) {
-                                // add array
-                            }
-                        } else {
-                            throw Exception("${e.toString()}")
+                        if (i != (groups.size - 1)) {
+                            implicitGroups.append(group)
                         }
+
+                        subjo.asObject().put(group, getEmptyTable())
+                        if (i == groups.size - 1 && arrayOfTables) {
+                            subjo.asObject().put(group, JsonArray(Array<JsonValue>([getEmptyTable()])) )
+                        }
+
                     }
                     subjo = subjo.asObject().get(group).getOrThrow()
                 }
@@ -355,7 +481,11 @@ public class Decoder {
         }
         return jsons
     }
-    
+
+    private func getEmptyTable(): JsonValue {
+        return JsonObject()
+    }
+
     /*
      * The Function is loadLineMultilineStr
      *
@@ -365,11 +495,24 @@ public class Decoder {
      * @since 0.29.3
      */
     private func loadLineMultilineStr(pstr: String): (Int64, Int64){
-        var p = pstr
-        var poffset = 0
+        var p: String = pstr
+        var poffset: Int64 = 0
         if (p.size < 3) {
             return (-1, poffset)
         }
+
+        if (p[0] == '[' && (p.trim()[p.size-1] != ']' && loadArrayIsstrarray(p))) {
+            var newp: Array<String> = p.slice(1, p.size - 1).trim().split(',')
+            while (newp.size > 1 && newp[-1][0] != '"' && newp[-1][0] != '\'') {
+                let strLast: String = newp[newp.size - 2] + ',' + newp[newp.size - 1]
+                newp = newp.slice(0, newp.size - 1)
+                newp[newp.size - 1] = strLast
+            }
+            let newpStr: String = newp[newp.size - 1]
+            poffset = p.size - newpStr.size
+            p = newpStr
+        }
+
         if (p[0] != '"' && p[0] != '\'') {
             return (-1, poffset)
         }
@@ -425,22 +568,25 @@ public class Decoder {
      * @return Type of String
      * @since 0.29.3
      */
-    private func loadValue(vs: String): String {
+    private func loadValue(vs: String): (ArrayList<String>, String) {
         var v: String = vs
+        let results: ArrayList<String> = ArrayList<String>()
         if (v.isEmpty()) {
-            throw Exception()
+            throw Exception("Empty value is invalid")
         }
         if (v.equals("true")) {
-            return true.toString()
+            results.append("true")
+            return (results, "Bool")
         }
         else if (v.toLower() == "true") {
-            throw Exception()
+            throw Exception("Only all lowercase booleans allowed")
         }
         else if (v.equals("false")) {
-            return false.toString()
+            results.append("false")
+            return (results, "Bool")
         }
         else if (v.toLower() == "false") {
-            throw Exception()
+            throw Exception("Only all lowercase booleans allowed!")
         }
         else if (v[0] == '\"' || v[0] == '\'') {
             let quotechar = v[0]
@@ -478,7 +624,7 @@ public class Decoder {
                     }
                     if (!oddbackslash) {
                         if (closed) {
-                            throw Exception()
+                            throw Exception("Found tokens after a closed string. Invalid TOML.")
                         } else {
                             if (!triplequolte || triplequoltecount > 1) {
                                 closed = true
@@ -517,20 +663,166 @@ public class Decoder {
             if (v.size > 1 && v[1] == quotechar && (v.size < 3 || v[1] == v[2])) {
                 v = v[2..v.size - 2]
             }
-            return v[1 .. v.size-1]
+            results.append(v[1 .. v.size-1])
+            return (results, "str")
         }
         else if (v[0] == '[') {
-            throw Exception(" not support1")
+            return (loadArray(v), "array")
         } else if (v[0] == '{'){
             let inlineObj = JsonObject()
             loadInlineObject(v, inlineObj)
-            return inlineObj.toString()
-        }
-        else {
-            return v
+            results.append(inlineObj.toString())
+            return (results, "inline_object")
+        } else {
+            results.append(v)
+            return (results, "others")
         }
     }
-    
+
+    func boundedString(s: String): Bool {
+        if (s.size == 0) {
+            return true
+        }
+        if (s[s.size - 1] != s[0]) {
+            return false
+        }
+        var i: Int64 = -2
+        var backslash: Bool = false
+        while (s.size + i > 0) {
+            if (s[s.size + i] == '\\') {
+                backslash = !backslash
+                i -= 1
+            } else {
+                break
+            }
+        }
+        return !backslash
+    }
+
+    func loadArrayIsstrarray(strArray: String): Bool {
+        let str: String = strArray.slice(1, strArray.size - 2).trim()
+        if (!str.isEmpty() && (str[0] == '"' || str[0] == '\'')) {
+            return true
+        }
+        return false
+    }
+
+    func loadArray(str: String): ArrayList<String> {
+        var atype: String = ""
+        var retval: ArrayList<String> = ArrayList<String>()
+        var a: String = str.trim()
+        var aArray: ArrayList<String> = ArrayList<String>()
+        let str1_1: String = a.slice(1, a.size - 2)
+        if (!str1_1.contains("[") || !str1_1.split('[')[0].trim().equals("")) {
+            let strArray: Bool = loadArrayIsstrarray(a)
+            if (!str1_1.trim().startsWith("{")) {
+                aArray.appendAll(str1_1.split(','))
+            } else {
+                // a is an inline object, and we must find matching parentheses to define the group
+                let new_a: ArrayList<String> = ArrayList<String>()
+                var start_group_index: Int64 = 1
+                var end_group_index: Int64 = 2
+                var open_bracket_count: Int64 = 0
+
+                if (a[start_group_index] == '{') {
+                    open_bracket_count = 1
+                }
+
+                var in_str: Bool = false
+                while (end_group_index < (a.size - 1)) {
+                    if (a[end_group_index] == '\"' || a[end_group_index] == '\'') {
+                        if (in_str) {
+                            var backslash_index: Int64 = end_group_index - 1
+                            while (backslash_index > -1 && a[backslash_index] == '\\') {
+                                in_str = !in_str
+                                backslash_index -= 1
+                            }
+                        }
+                        in_str = !in_str
+                    }
+                    if (!in_str && a[end_group_index] == '{') {
+                        open_bracket_count += 1
+                    }
+                    if (in_str || a[end_group_index] != '}') {
+                        end_group_index += 1
+                        continue
+                    } else if (a[end_group_index] == '}' && open_bracket_count > 1) {
+                        open_bracket_count -= 1
+                        end_group_index += 1
+                        continue
+                    }
+
+                    // Increase end_group_index by 1 to get the closing bracket
+                    end_group_index += 1
+
+                    new_a.append(a.slice(start_group_index, end_group_index - start_group_index))
+
+                    /*
+                     * The next start index is at least after the closing bracket,
+                     * a closing bracket can be followed by a comma since we are in an array.
+                     */
+                    start_group_index = end_group_index + 1
+                    while (start_group_index < (a.size - 1) && a[start_group_index] != '{') {
+                        start_group_index += 1
+                    }
+                    end_group_index = start_group_index + 1
+                }
+                aArray = new_a
+            }
+            var b: Int64 = 0
+            if (strArray) {
+                while (b < aArray.size - 1) {
+                    var ab: String = aArray[b].trim()
+                    while (!boundedString(ab) ||
+                           (ab.size > 2 &&
+                            ab[0] == ab[1] && ab[1] == ab[2] &&
+                            ab[ab.size - 2] != ab[0] &&
+                            ab[ab.size - 3] != ab[0])) {
+                        aArray.set(b, aArray[b] + "," + aArray[b + 1])
+                        ab = aArray[b].trim()
+                        if (b < aArray.size - 2) {
+                            aArray = aArray[0..(b + 1)]
+                            aArray.appendAll(aArray[(b + 2)..(aArray.size)])
+                        } else {
+                            aArray = aArray[0..(b + 1)]
+                        }
+                    }
+                    b += 1
+                }
+            }
+        } else {
+            let al: Array<Char> = a.slice(1, a.size - 2).toCharArray()
+            var openarr: Int64 = 0
+            var j: Int64 = 0
+            for (i in 0..al.size) {
+                if (al[i] == '[') {
+                    openarr += 1
+                } else if (al[i] == ']') {
+                    openarr -= 1
+                } else if (al[i] == ',' && openarr != 0) {
+                    aArray.append(String(al[j..i]))
+                    j = i + 1
+                }
+            }
+            aArray.append(String(al[j..al.size]))
+        }
+        for (i in 0..aArray.size) {
+            aArray.set(i, aArray[i].trim())
+            if (!aArray[i].equals("")) {
+                let (nval, ntype): (ArrayList<String>, String) = loadValue(aArray[i])
+                if (!atype.isEmpty()) {
+                    if (!ntype.equals(atype)) {
+                        throw Exception("ValueError: Not a homogeneous array")
+                    }
+                } else {
+                    atype = ntype
+                }
+                retval.appendAll(nval)
+            }
+        }
+        return retval
+    }
+
     /*
      * The Function is loadInlineObject
      *
@@ -709,7 +1001,7 @@ public class Decoder {
             case n[n.size-1] == '_' => false
             case n.contains("_.") || n.contains("._") => false
             case n.size == 1 => true
-            case n[0] == '0' && syb.contains(n[1])  => false
+            case n[0] == '0' && !syb.contains(n[1])  => false
             case n[0] == '+' || n[0] == '-' =>
                 return if (n.size > 2 && n[1] == '0' && n[2] != '.') {
                 false
@@ -733,12 +1025,14 @@ public class Decoder {
      * @since 0.29.3
      */
     func loadLine(jvconst: JsonObject, line: String, mls: String, mbs: Bool): Option<(String,String,Bool)> {
+
         var multiBackSlash = mbs
         var multikey = mls
         var jv = jvconst
         var i = 1
         var quoteSplits = getSplitOnQuotes(line)
         var quoted = false
+        var vtype: String = ""
         for (quoteSplit in quoteSplits) {
             if (!quoted && quoteSplit.contains('=')){
                 break;
@@ -747,16 +1041,18 @@ public class Decoder {
             quoted = !quoted
         }
         var pair = line.split('=', i+1)
+
         let strictlyValid: Bool = strictlyValidNum(pair[pair.size - 1])
         match (numberWithUnderScores.matcher(pair[pair.size - 1]).fullMatch()) {
             case Some(v) => pair[pair.size - 1] = pair[pair.size - 1].replace("_", "")
             case None => ()
         }
+
         var pairLast: String = pair[pair.size - 1]
-        
-        for (index in 0..pair.size) {
-            pair[index] = pair[index].trim()
-        }
+
+        let strPair0: String = String.join(pair[0..(pair.size - 1)], delimiter: "=")
+        pair = [strPair0.trim(), pair[pair.size - 1].trim()]
+
         if (pair[0].contains('.')) {
             var levels: ArrayList<String>
             if (pair[0].contains('"') || pair[0].contains('\'')) {
@@ -787,12 +1083,15 @@ public class Decoder {
                 jv = jv.get(levels[levelIndx]).getOrThrow().asObject()
             }
             pair[0] = levels[levels.size-1].trim()
+        } else if ((pair[0][0] == '\"' || pair[0][0] == '\'') && (pair[0][pair.size - 1] == pair[0][0])) {
+            pair[0] = unescape(pair[0].slice(1, pair[0].size - 2))
         }
-        
+
         let (k_tuple, koffset_tuple) = loadLineMultilineStr(pair[1])
+
         var k = k_tuple
         var koffset = koffset_tuple
-        var value = ""
+        var value: ArrayList<String> = ArrayList<String>()
         var multiLineStr = ""
         if (k > -1) {
             while(k > -1 && pair[1][k + koffset] == '\\') {
@@ -804,13 +1103,30 @@ public class Decoder {
             }
             multikey = pair[0]
         } else {
-            value = loadValue(pair[1])
+            let res: (ArrayList<String>, String) = loadValue(pair[1])
+            value = res[0]
+            vtype = res[1]
         }
-        if (multikey.isEmpty()) {
-            jvconst.put(pair[0], JsonString(value.replace("\\", "")))
-            return None
-        } else {
-            return Some((multikey, multiLineStr, multiBackSlash))
+
+        try {
+            jv = jv.get(pair[0]).getOrThrow().asObject()
+        } catch (e: Exception) {
+            if (!multikey.isEmpty()) {
+                return Some((multikey, multiLineStr, multiBackSlash))
+            } else {
+                if (vtype.equals("array")) {
+                    let ja: JsonArray = JsonArray()
+                    for (str in value) {
+                        ja.add(JsonString(str))
+                    }
+                    jvconst.put(pair[0], ja)
+                } else {
+                    jvconst.put(pair[0], JsonString(value[0].replace("\\", "")))
+                }
+
+            }
         }
+        return None
+
     }
 }

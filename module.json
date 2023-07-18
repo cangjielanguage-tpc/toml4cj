@@ -1,7 +1,7 @@
 {
   "cjc_version": "0.36.4",
   "organization": "Cangjie_Library_Team",
-  "name": "toml",
+  "name": "toml4cj",
   "description": "The decoder and encoder for toml file by Cangjie.",
   "version": "0.0.3",
   "requires": {},

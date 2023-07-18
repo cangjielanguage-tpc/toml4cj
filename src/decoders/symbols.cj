@@ -29,8 +29,8 @@ public class Symbols {
     static public let DOT: String = String.fromUtf8([0x2E]) // .
     static public let UNDERLINE: String = String.fromUtf8([0x5F]) // _
     static public let DASHED: String = String.fromUtf8([0x2D]) // -
-    static public let FORWARD_SLASH: String = String.fromUtf8([0x5C]) // /
-    static public let BACK_SLASH: String = String.fromUtf8([0x2F]) // \
+    static public let FORWARD_SLASH: String = String.fromUtf8([0x2F]) // /
+    static public let BACK_SLASH: String = String.fromUtf8([0x5C]) // \
     static public let SPACE: String = String.fromUtf8([0x20]) // SPACE
     static public let HORIZONTAL_TAB: String = String.fromUtf8([0x09]) // \t
     static public let LEFT_BRACE: String = String.fromUtf8([0x7B]) // {

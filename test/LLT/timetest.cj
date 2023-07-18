@@ -1,7 +1,7 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml import decoders.*
+from toml4cj import decoders.*
 from std import os.posix.*
 from std import time.*
 
