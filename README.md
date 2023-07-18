@@ -1,5 +1,5 @@
 <div align="center">
-<h1>TOML</h1>
+<h1>TOML4CJ</h1>
 </div>
 
 <p align="center">
@@ -12,10 +12,10 @@
 
 ## <img alt="" src="./doc/assets/readme-icon-introduction.png" style="display: inline-block;" width=4%/> 简介
 
-TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML 被设计成可以无歧义地映射为哈希表。TOML 应该能很容易地被解析成各种语言中的数据结构。
+TOML4CJ 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML4CJ 被设计成可以无歧义地映射为哈希表。TOML4CJ 应该能很容易地被解析成各种语言中的数据结构。
 参考toml语法规约地址: https://toml.io/cn/
 
-该项目是仓颉语言实现 TOML v1.0.0 的语言库。参考地址：https://github.com/uiri/toml
+该项目是仓颉语言实现 TOML4CJ v1.0.0 的语言库。参考地址：https://github.com/uiri/toml
 
 ### 特性
 
@@ -130,13 +130,14 @@ main() {
 
 运行结果如下:
 
-```cangjie
+```shell
 {"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
 ```
 
-### 提供读取TOML数据的功能示例
-  用例执行需要toml文件
-```cangjie
+### TOML4CJ 提供读取 toml 文件数据的功能示例
+  用例执行需要 toml 文件
+
+```toml4cj
 from toml4cj import decoders.*
 from std import os.posix.*
 main () {
@@ -159,14 +160,15 @@ main () {
 
 运行结果如下:
 
-```
+```shell
 return 1
 ```
 
-### 提供解析TOML数据的功能示例  
+### TOML4CJ 提供解析 toml 文件数据的功能示例  
 （备注：  参考toml语法规约地址: [https://toml.io/cn/](https://gitee.com/link?target=https%3A%2F%2Ftoml.io%2Fcn%2F) ）
  用例执行需要toml文件
-```
+
+```toml4cj
 from toml4cj import decoders.*
 from std import os.posix.*
 let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
@@ -190,7 +192,7 @@ main() {
 
 运行结果如下:
 
-```cangjie
+```shell
 {"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
 ```
 
