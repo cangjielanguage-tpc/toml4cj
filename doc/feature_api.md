@@ -1,16 +1,16 @@
 ## toml4cj 库
 
 ### 介绍
-TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML 被设计成可以无歧义地映射为哈希表。TOML 应该能很容易地被解析成各种语言中的数据结构。
+TOML4CJ 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML4CJ 被设计成可以无歧义地映射为哈希表。TOML4CJ 应该能很容易地被解析成各种语言中的数据结构。
 
 参考toml语法规约地址: https://toml.io/cn/。
 
-### 1 提供读取TOML数据的功能
+### 1 TOML4CJ 提供读取 toml 文件数据的功能
 
 前置条件：NA 
 
 场景：
-1. 读取toml文件，支持TOML v1.0.0
+1. 读取 toml 文件，支持 TOML4CJ v1.0.0
 
 约束：NA
 
@@ -18,13 +18,13 @@ TOML 旨在成为一个语义明显且易于阅读的最小化配置文件格式
 
 可靠性： NA
 
-#### 1.1 toml 读取
+#### 1.1 toml 文件读取
 
 ##### 1.1.1 主要接口
 
 ###### class Decoder
 
-```cangjie
+```toml4cj
 public class Decoder {
 
     /*
@@ -66,7 +66,7 @@ bare-key = "value"
 1234 = "value"
 ```
 
-```cangjie
+```toml4cj
 from toml4cj import decoders.*
 
 main() {
@@ -79,16 +79,16 @@ main() {
 
 运行结果如下：
 
-```cangjie
+```toml4cj
 {"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
 ```
 
-### 2 提供解析TOML数据的功能
+### 2 TOML4CJ 提供解析 toml 文件数据的功能
 
 前置条件：NA 
 
 场景：
-1. 读取toml文件，支持TOML v1.0.0
+1. 读取 toml 文件，支持 TOML4CJ v1.0.0
 
 约束：
 
@@ -96,13 +96,13 @@ main() {
 
 可靠性： 目前只实现对整数、浮点数、字符串、布尔类型字面量的解码。
 
-#### 2.1 toml 解析
+#### 2.1 toml 文件解析
 
 ##### 2.1.1 主要接口
 
 ###### class Decoder
 
-```cangjie
+```toml4cj
 public class Decoder {
 
     /*
@@ -144,7 +144,7 @@ bare-key = "value"
 1234 = "value"
 ```
 
-```cangjie
+```toml4cj
 from toml4cj import decoders.*
 
 main() {
@@ -157,16 +157,16 @@ main() {
 
 运行结果如下：
 
-```cangjie
+```toml4cj
 {"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
 ```
 
-### 3 提供序列化TOML数据的功能
+### 3 TOML4CJ 提供序列化 toml 数据的功能
 
 前置条件：NA 
 
 场景：
-1. 读取toml文件，解析toml文件方便仓颉读取，支持TOML v1.0.0
+1. 读取toml文件，解析toml文件方便仓颉读取，支持 TOML4CJ v1.0.0
 
 约束：目前只实现对整数、浮点数、字符串、布尔类型字面量的解码。
 
@@ -180,7 +180,7 @@ main() {
 
 ###### class TomlTz
 
-```cangjie
+```toml4cj
 public class TomlTz {
     /*
      * 初始化 TomlTz
@@ -229,7 +229,7 @@ bare-key = "value"
 1234 = "value"
 ```
 
-```cangjie
+```toml4cj
 from toml4cj import decoders.*
 
 main() {
@@ -242,13 +242,13 @@ main() {
 
 运行结果如下：
 
-```cangjie
+```toml4cj
 {"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
 ```
 
 ### 4 异常类
 
-```cangjie
+```toml4cj
 public class TomlBaseException <: Exception {
 
     /*
@@ -308,7 +308,7 @@ public class TomlIllegalKeyException <: TomlBaseException {
 
 ### 5 常量符号类
 
-```cangjie
+```toml4cj
 public class Symbols {
     // "
     static public let QUOTE: String = String.fromUtf8([0x22])
