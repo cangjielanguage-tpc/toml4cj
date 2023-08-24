@@ -73,7 +73,7 @@ public class Decoder {
      */
     public func load(file: File) {
         match(data) {
-            case Some(v) => throw Exception("Can't use string decode and stream decode at the same time")
+            case Some(_) => throw Exception("Can't use string decode and stream decode at the same time")
             case None => ()
         }
         mode = DecodeMode.STREAM
@@ -107,7 +107,6 @@ public class Decoder {
         var lineNo: Int64 = 1
         let jsons: JsonObject = JsonObject()
         var subjo: JsonValue = jsons
-        let nilJson: JsonValue = JsonObject()
         for (i in 0..sl.size) {
             let item: Char = sl[i]
             if(item == Symbols.CR[0] && sl[i + 1] == Symbols.LF[0]) {
@@ -122,7 +121,6 @@ public class Decoder {
                 if (openString) {
                     if (item == openStrChar) {
                         var oddBackSlash: Bool = false
-                        var k: Int64 = 1
                         if (!oddBackSlash) {
                             keyName = 2
                             openString = false
@@ -432,7 +430,7 @@ public class Decoder {
                     } else {
                         if (!match (groupNameRe.matches(groups[i])) {
                             case None => false
-                            case Some(x) => true
+                            case Some(_) => true
                         }) {
                             let err = "Invalid group name '${groups[i]}'. Try quoting it. pos = ${pos}.\n ${original}"
                             throw TomlDecodeErrorException(err)
@@ -853,7 +851,7 @@ public class Decoder {
         }
         for (group in groups) {
             match(loadLine(obj, group, "", multiBackSlash)) {
-                case Some(v) => break
+                case Some(_) => break
                 case None => ()
             }
         }
@@ -1042,13 +1040,13 @@ public class Decoder {
         }
         var pair = line.split('=', i+1)
 
-        let strictlyValid: Bool = strictlyValidNum(pair[pair.size - 1])
+        strictlyValidNum(pair[pair.size - 1])
         match (numberWithUnderScores.matcher(pair[pair.size - 1]).fullMatch()) {
-            case Some(v) => pair[pair.size - 1] = pair[pair.size - 1].replace("_", "")
+            case Some(_) => pair[pair.size - 1] = pair[pair.size - 1].replace("_", "")
             case None => ()
         }
 
-        var pairLast: String = pair[pair.size - 1]
+        pair[pair.size - 1]
 
         let strPair0: String = String.join(pair[0..(pair.size - 1)], delimiter: "=")
         pair = [strPair0.trim(), pair[pair.size - 1].trim()]

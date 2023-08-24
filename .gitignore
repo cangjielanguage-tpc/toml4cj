@@ -7,3 +7,9 @@ log.*.txt
 .gitee/
 .vscode/
 *.bc
+ci_test/
+ci_lib/
+log/
+tmp/
+.cjpm-history
+module-lock.json

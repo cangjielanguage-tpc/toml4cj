@@ -34,7 +34,8 @@ public class DecoderTest {
             let decoder_2 = Decoder()
             decoder_2.load(filePath_1)
         } catch (e2: Exception) {
-            @Assert(e2.toString().contains("FSException: The file does not exist!"),true)
+            println(e2)
+            @Assert(e2.toString().contains("FSException: The file does not exist or permission denied!"),true)
             returnFlag = 0
         }
         try {
