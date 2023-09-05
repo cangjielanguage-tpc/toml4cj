@@ -40,7 +40,7 @@ main() {
     }
     
     let tomltz_1_1 = TomlTz("+12:23")
-    if(!(tomltz_1_1.location() is Location)){
+    if(!(tomltz_1_1.location() is TimeZone)){
         return 2
     }
     var  location = tomltz_1_1.location().toString()

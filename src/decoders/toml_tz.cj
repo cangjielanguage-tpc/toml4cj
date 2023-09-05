@@ -60,7 +60,7 @@ public class TomlTz {
      * @since 0.29.3
      */
     public func utcOffset() {
-        return (Duration.hour(hour) + Duration.minute(minute) * sign)
+        return (Duration.hour*hour + Duration.minute*minute * sign)
     }
 
     /**
@@ -70,17 +70,17 @@ public class TomlTz {
      * @since 0.29.3
      */
     public func dst() {
-        return Duration.hour(0) + Duration.minute(0) + Duration.second(0) + Duration.microsecond(0) + Duration.nanosecond(0)
+        return Duration.Zero
     }
 
     /**
-     * The Function is location
+     * The Function is TimeZone
      *
      *
-     * @return Type of Location
+     * @return Type of TimeZone
      * @since 0.29.3
      */
-    public func location(): Location {
-        Location(tzname(), utcOffset())
+    public func location(): TimeZone {
+        TimeZone(tzname(), utcOffset())
     }
 }
