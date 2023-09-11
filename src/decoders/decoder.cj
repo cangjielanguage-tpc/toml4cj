@@ -542,22 +542,6 @@ public class Decoder {
     }
     
     /*
-     * The Function is joinChar
-     *
-     * @param chars of Array<Char>
-     *
-     * @return Type of String
-     * @since 0.29.3
-     */
-    private func joinChar(chars: Array<Char>): String {
-        var result: String = ""
-        for (c in chars) {
-            result += c.toString()
-        }
-        result
-    }
-    
-    /*
      * The Function is loadValue
      *
      * @param vs of String
@@ -653,7 +637,7 @@ public class Decoder {
                 for ( prefix in ["\\u", "\\U"]) {
                     if (v.contains(prefix)) {
                         let hexbytes = v.split(prefix)
-                        v = load_unicode_escapes(hexbytes[0], hexbytes[1..], prefix)
+                        v = load_unicode_escapes(hexbytes[0])
                     }
                 }
                 v = unescape(v)
@@ -862,13 +846,11 @@ public class Decoder {
      * The Function is load_unicode_escapes
      *
      * @param v of String
-     * @param hexbytes of Array<String>
-     * @param prefix of String
      *
      * @return Type of String
      * @since 0.29.3
      */
-    private func load_unicode_escapes(v: String, hexbytes: Array<String>, prefix: String): String {
+    private func load_unicode_escapes(v: String): String {
         return v
     }
     private let mypsbs = ['0', 'b', 'f', 'n', 'r', 't', '"']

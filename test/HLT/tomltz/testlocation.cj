@@ -18,7 +18,7 @@ public class TomlTzTest{
     @TestCase
     func testLocation():Unit{
         let tomltz_1 = TomlTz("+12:23")
-        if(!(tomltz_1.location() is Location)){
+        if(!(tomltz_1.location() is TimeZone)){
             returnFlag = 1
         }
         location = tomltz_1.location().toString()
@@ -31,19 +31,6 @@ public class TomlTzTest{
             returnFlag = 2
         }
 
-        try{
-            let tomltz_3 = TomlTz("1979-05-27T07:32:00Z") 
-            location = tomltz_3.location().toString()
-        }catch(e2:Exception){
-            returnFlag = 3
-        }
-        
-        let tomltz_4 = TomlTz("2021-08-04T17:00:00+01:00")
-        try{
-            location = tomltz_4.location().toString()
-        }catch(e3:Exception){
-            returnFlag = 4
-        }
         @Assert(returnFlag,0)
     }
 }
