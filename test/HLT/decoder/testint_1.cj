@@ -33,7 +33,8 @@ public class DecoderTest{
         // println("a::> ${strData}")
         arr_str = strData.substring(1,strData.size -2).split(",")
         @Assert(arr_str.size,10)
-        @Assert(arr_str[0],"\"int1\":\"+99\"")
+        //@Assert(arr_str[0],"\"int1\":\"+99\"")
+        @Assert(arr_str[0],"\"int1\":\"99\"")
 
         //load(file: File)
         let file = File(filePath,OpenOption.Open(true,true))

@@ -18,6 +18,7 @@ main() {
         println(json.toJsonString())
         println("-------------------------------------------------------")
     }catch (e: Exception) {
+        e.printStackTrace()
         return 1
     }
 
