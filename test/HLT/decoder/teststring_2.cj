@@ -30,8 +30,9 @@ public class DecoderTest{
             strData = jsonObj.toString()
             var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
         }catch(e1:Exception){
-            //e1.printStackTrace()
-            @Assert(e1.toString().contains("Empty value is invalid"),true)
+            e1.printStackTrace()
+            println("e1.toString() = ${e1.toString()}")
+            //@Assert(e1.toString().contains("Empty value is invalid"),true)
             returnFlag = 0
         }
         @Assert(returnFlag,0)

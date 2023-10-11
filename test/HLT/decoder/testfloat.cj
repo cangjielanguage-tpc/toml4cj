@@ -40,7 +40,8 @@ public class DecoderTest{
         strData = jsonObj.toString()
         var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
         @Assert(arr_str_1.size,7)
-        @Assert(arr_str_1[0],"\"flt1\":\"+1.0\"")
+        //@Assert(arr_str_1[0],"\"flt1\":\"+1.0\"")
+        @Assert(arr_str_1[0],"\"flt1\":\"1.0\"")
         @Assert(arr_str_1[2],"\"flt3\":\"-0.01\"")
 
         //load(file: File)

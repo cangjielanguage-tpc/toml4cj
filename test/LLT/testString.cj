@@ -11,7 +11,8 @@
 
 from toml4cj import decoders.*
 from std import os.posix.*
-let str = ##"{"str":"I'm a string. \"You can quote me\". NametJo"}"##
+//let str = ##"{"str":"I'm a string. \"You can quote me\". NametJo"}"##
+let str = ##"{"str":"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."}"##
 main() {
     var path2: String = getcwd()
     var arr: Array<String> = [
@@ -31,6 +32,7 @@ main() {
         let a = decoder.decode()
         result += a.toString()
     }
+    println("result = ${result}")
     if (!result.contains(str)) {
         return 1
     }

@@ -12,9 +12,15 @@ main() {
         "${path2}/error.toml" 
         ]
     let decoder: Decoder = Decoder()
-    for(i in 0..arr.size) {
-        decoder.load(arr[i])
-        let a = decoder.decode()
+
+    try {
+        for(i in 0..arr.size) {
+            decoder.load(arr[i])
+            let a = decoder.decode()
+        }
+    }catch (e: Exception) {
+        e.printStackTrace()
+        return 0
     }
-    return 0
+    return 1
 }

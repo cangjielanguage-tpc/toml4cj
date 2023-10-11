@@ -35,7 +35,8 @@ public class DecoderTest{
         strData =  decoder.decode().toString()
         var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
         @Assert(arr_str_1.size,7)
-        @Assert(arr_str_1[5],"\"char_6\":\"t\"")
+        //@Assert(arr_str_1[5],"\"char_6\":\"t\"")
+        @Assert(arr_str_1[5], ##""char_6":"\\t""##)
 
         //load(file: File)
         let file = File(filePath,OpenOption.Open(true,true))
@@ -46,7 +47,8 @@ public class DecoderTest{
              returnFlag = 2
         }
         @Assert(arr_str_2.size,7)
-        @Assert(arr_str_2[6],"\"char_7\":\"u{4f60}\"")
+        //@Assert(arr_str_2[6],"\"char_7\":\"u{4f60}\"")
+        @Assert(arr_str_2[6], ##""char_7":"\\u{4f60}""##)
 
         @Assert(returnFlag,0)
     }

@@ -299,7 +299,7 @@ public class Decoder {
         var s: String = String(sl)
 
         var ss: Array<String> = s.split(Symbols.LF)
-        var multiKey: Bool = false
+        var multiKey: String = ""
         var multilineStrStr: String = ""
         var multiBackSlash: Bool = false
         var pos: Int64 = 0
@@ -315,11 +315,11 @@ public class Decoder {
             if (multilineStrStr.size == 0 || multiBackSlash || (multilineStrStr.indexOf(Symbols.LF) ?? -1) == -1) {// \n
                 line = line.trim()
             }
-            if (line.equals("") && (!multiKey || multiBackSlash)) {
+            if (line.equals("") && (!multiKey.isEmpty() || multiBackSlash)) {
                 continue
             }
 
-            if (multiKey) {
+            if (!multiKey.isEmpty()) {
                 if (multiBackSlash) {
                     multilineStrStr += line
                 } else {
@@ -349,12 +349,12 @@ public class Decoder {
                         for (str in value) {
                             ja.add(JsonValue.fromStr(str))
                         }
-                        subjo.asObject().put(multiKey.toString(), ja)
+                        subjo.asObject().put(multiKey, ja)
                     } else {
-                        subjo.asObject().put(multiKey.toString(), JsonValue.fromStr(value[0]))
+                        subjo.asObject().put(multiKey, JsonString(value[0]))
                     }
 
-                    multiKey = false
+                    multiKey = ""
                     multilineStrStr = ""
                 } else {
                     var k: Int64 = multilineStrStr.size - 1
@@ -474,7 +474,14 @@ public class Decoder {
                 }
             }
             else if (line.contains('=')) {
-                loadLine(subjo.asObject(), line, multilineStrStr, multiBackSlash)
+                let resLoadLine: Option<(String,String,Bool)> = loadLine(subjo.asObject(), line, multiKey, multiBackSlash)
+                match (resLoadLine) {
+                    case Some(v) =>
+                        multiKey = v[0]
+                        multilineStrStr = v[1]
+                        multiBackSlash = v[2]
+                    case None => ()
+                }
             }
         }
         return jsons
@@ -500,8 +507,8 @@ public class Decoder {
         }
 
         if (p[0] == '[' && (p.trim()[p.size-1] != ']' && loadArrayIsstrarray(p))) {
-            var newp: Array<String> = p.slice(1, p.size - 1).trim().split(',')
-            while (newp.size > 1 && newp[-1][0] != '"' && newp[-1][0] != '\'') {
+            var newp: Array<String> = p.slice(1, p.size - 1).trim().split(',', removeEmpty: true)
+            while (newp.size > 1 && newp[newp.size - 1][0] != '"' && newp[newp.size - 1][0] != '\'') {
                 let strLast: String = newp[newp.size - 2] + ',' + newp[newp.size - 1]
                 newp = newp.slice(0, newp.size - 1)
                 newp[newp.size - 1] = strLast
@@ -637,7 +644,7 @@ public class Decoder {
                 for ( prefix in ["\\u", "\\U"]) {
                     if (v.contains(prefix)) {
                         let hexbytes = v.split(prefix)
-                        v = load_unicode_escapes(hexbytes[0])
+                        v = load_unicode_escapes(v, hexbytes[0], hexbytes[1..(hexbytes.size)], prefix)
                     }
                 }
                 v = unescape(v)
@@ -655,10 +662,68 @@ public class Decoder {
             loadInlineObject(v, inlineObj)
             results.append(inlineObj.toString())
             return (results, "inline_object")
-        } else {
+        }else {
+            match (TIME_RE.matcher(v).fullMatch()) {
+                case Some(_) => throw Exception("Temporarily does not support time format parsing.")
+                case None => ()
+            }
+
+            /*
+             * Temporarily does not support data time type format parsing
+             * parsed_date = _load_date(v)
+             * if parsed_date is not None:
+             *     return (parsed_date, "date")
+             * if (!strictly_valid) {
+             *     throw Exception("Weirdness with leading zeroes or underscores in your number.")
+             * }
+             */
+
+            var itype: String = "Int64"
+            var neg: Bool = false
+            if (v[0] == '-') {
+                neg = true
+                v = v.substring(1)
+            } else if (v[0] == '+') {
+                v = v.substring(1)
+            }
+            v = v.replace("_", "")
+            let lowerv: String = v.toLower()
+
+            if (v.contains('.') || (!v.contains('x') && (v.contains('e') || v.contains('E')))) {
+                if (v.contains('.') && v.split('.', 2)[1] == "") {
+                    throw Exception("This float is missing digits after the point")
+                }
+                if (!"0123456789".contains(v[0])) {
+                    throw Exception("This float doesn't have a leading digit")
+                }
+
+                try {
+                    Float64.parse(v)
+                } catch (e: IllegalArgumentException) {
+                    throw IllegalArgumentException("now pass the string fail.")
+                }
+
+                itype = "Float64"
+            } else if (lowerv.size == 3 && (lowerv == "inf" || lowerv == "nan")) {
+
+                try {
+                    Float64.parse(v)
+                } catch (e: IllegalArgumentException) {
+                    throw IllegalArgumentException("pass the string fail!")
+                }
+
+                itype = "Float64"
+            }
+            if (itype == "Int64") {
+                Int64.parse(v)
+            }
+            if (neg) {
+                v = "-" + v
+            }
             results.append(v)
-            return (results, "others")
+            return (results, itype)
         }
+
     }
 
     func boundedString(s: String): Bool {
@@ -768,6 +833,7 @@ public class Decoder {
                         } else {
                             aArray = aArray[0..(b + 1)]
                         }
+                        if (b >= aArray.size - 1) { break }
                     }
                     b += 1
                 }
@@ -853,7 +919,74 @@ public class Decoder {
     private func load_unicode_escapes(v: String): String {
         return v
     }
+
+    private func load_unicode_escapes(vNative: String, vs: String, hexbytes: Array<String>, prefix: String): String {
+        var v: String = vs
+        var skip: Bool = false
+        var i: Int64 = v.size - 1
+        while (i > -1 && v[i] == '\\') {
+            skip = !skip
+            i -= 1
+        }
+        for (hx in hexbytes) {
+            if (skip) {
+                skip = false
+                i = hx.size - 1
+                while (i > -1 && hx[i] == '\\') {
+                    skip = !skip
+                    i -= 1
+                }
+                v += prefix
+                v += hx
+                continue
+            }
+            var hxb: String = ""
+            i = 0
+            var hxblen: Int64 = 4
+            if (prefix == "\\U") {
+                hxblen = 8
+            }
+            //hxb = ''.join(hx[i:i + hxblen]).lower()
+            let hxbNative: String = hx[i..(i + hxblen)]
+            hxb = hxbNative.toLower()
+            if (!stripChars(hxb, "0123456789abcdef")) {
+                throw TomlIllegalValueException("Invalid escape sequence: " + hxb)
+            }
+            if (hxb[0] == 'd' && !stripChars(hxb.substring(1), "01234567")) {
+                throw TomlIllegalValueException("Invalid escape sequence: " + hxb +
+                                 ". Only scalar unicode points are allowed.")
+            }
+
+            var unichr: String = "'" + prefix + "{" + hxbNative + "}'"
+            let chars: Char = Char.parse(unichr)
+
+            v = v + chars.toString() + hx.substring(hxb.size)
+        }
+        return v
+    }
+
+    private func stripChars(hxb: String, chars: String): Bool {
+        for (c in hxb) {
+            if (!chars.contains(c)) {
+                return false
+            }
+        }
+        return true
+    }
+
     private let mypsbs = ['0', 'b', 'f', 'n', 'r', 't', '"']
+    private let escapedchars = ['\0', '\b', '\f', '\n', '\r', '\t', '\"']
+
+    private func escapeToEscapedchars(c: Char): Char {
+        let len: Int64 = mypsbs.size
+        for (i in 0..len) {
+            let m = mypsbs[i]
+            if (c == m) {
+                return escapedchars[i]
+            }
+        }
+        return c
+    }
     /*
      * The Function is getInchars
      *
@@ -886,9 +1019,15 @@ public class Decoder {
             if (backslash){
                 backslash = false
                 if (getInchars(v[i])) {
-                    v = v[0..i-1] + v[i] + v[i+1..]
+                    //continue
+                    let escapedChars: Char = escapeToEscapedchars(v[i])
+                    v = v[0..(i - 1)].concat(escapedChars) + v[(i + 1)..v.size]
+                } else if (v[i] == '\\') {
+                    v = v[0..(i - 1)] + v[i..v.size]
+                } else if (v[i] == 'u' || v[i] == 'U') {
+                    i += 1
                 } else {
-                    throw Exception()
+                    throw Exception("unescape")
                 }
                 continue
             } else if (v[i] == '\\') {
@@ -1022,17 +1161,48 @@ public class Decoder {
         }
         var pair = line.split('=', i+1)
 
-        strictlyValidNum(pair[pair.size - 1])
+        var strictlyValid: Bool = strictlyValidNum(pair[pair.size - 1])
         match (numberWithUnderScores.matcher(pair[pair.size - 1]).fullMatch()) {
             case Some(_) => pair[pair.size - 1] = pair[pair.size - 1].replace("_", "")
             case None => ()
         }
 
-        pair[pair.size - 1]
+        while (pair[pair.size - 1].size > 0 && (pair[pair.size - 1][0] != ' ' && pair[pair.size - 1][0] != '\t' &&
+                                 pair[pair.size - 1][0] != '\'' && pair[pair.size - 1][0] != '"' &&
+                                 pair[pair.size - 1][0] != '[' && pair[pair.size - 1][0] != '{' &&
+                                 pair[pair.size - 1].trim() != "true" &&
+                                 pair[pair.size - 1].trim() != "false")) {
+            try {
+                Float64.parse(pair[pair.size - 1])
+                break
+            } catch (e: IllegalArgumentException) {
+                println("now pass the Exception")
+            }
+            
+            /*
+             * Temporarily does not support data time type format parsing
+             * if _load_date(pair[-1]) is not None:
+             *     break
+             */
+
+            match (TIME_RE.matcher(pair[pair.size - 1]).fullMatch()) {
+                case Some(_) => break
+                case None => ()
+            }
+             
+            i += 1
+            let prevVal: String = pair[pair.size - 1]
+            pair = line.split('=', i)
+            if (prevVal == pair[pair.size - 1]) {
+                throw Exception("Invalid date or number!")
+            }
+            if (strictlyValid) {
+                strictlyValid = strictlyValidNum(pair[pair.size - 1])
+            }
+        }
 
         let strPair0: String = String.join(pair[0..(pair.size - 1)], delimiter: "=")
         pair = [strPair0.trim(), pair[pair.size - 1].trim()]
-
         if (pair[0].contains('.')) {
             var levels: ArrayList<String>
             if (pair[0].contains('"') || pair[0].contains('\'')) {
@@ -1079,7 +1249,9 @@ public class Decoder {
                 k -= 1
             }
             if (multiBackSlash) {
-                multiLineStr = pair[1][..pair[1].size-1]
+                multiLineStr = pair[1][0..(pair[1].size-1)]
+            } else {
+                multiLineStr = pair[1] + "\n"
             }
             multikey = pair[0]
         } else {
@@ -1101,7 +1273,7 @@ public class Decoder {
                     }
                     jvconst.put(pair[0], ja)
                 } else {
-                    jvconst.put(pair[0], JsonString(value[0].replace("\\", "")))
+                    jvconst.put(pair[0], JsonString(value[0]))
                 }
 
             }
