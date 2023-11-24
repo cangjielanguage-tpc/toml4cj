@@ -42,6 +42,10 @@ public class Decoder {
 
     private let TIME_RE: Regex = Regex("([0-9]{2}):([0-9]{2}):([0-9]{2})(\\.([0-9]{3,6}))?")
 
+    private var lineNumber: Int64 = 0
+    private var lineNumberDifference: Int64 = 0
+    private var slLine: Array<String> = Array<String>()
+
     /**
      * The Function is init constructor
      *
@@ -49,7 +53,22 @@ public class Decoder {
      */
     public init() {
     }
-    
+
+    private func getLineNumber(vs: String): (Int64, Bool) {
+        var startIndex: Int64 = this.lineNumber
+        if (lineNumberDifference > 0) {
+            startIndex += this.lineNumberDifference
+        }
+        for (i in startIndex..slLine.size) {
+            let str: String = slLine[i]
+            if (str.contains(vs)) {
+                this.lineNumberDifference = i - lineNumber
+                return (i + 1, true)
+            }
+        }
+        return (this.lineNumber + 1, false)
+    }
+
     /**
      * The Function is load
      *
@@ -83,7 +102,7 @@ public class Decoder {
         }
         stream = Some(file)
     }
-    
+
     /**
      * The Function is decode
      *
@@ -92,6 +111,9 @@ public class Decoder {
     public func decode():JsonObject {
         let implicitGroups: ArrayList<String> = ArrayList<String>()
         let original: String = readData()
+
+        this.slLine = original.split(Symbols.LF)
+
         var sl: Array<Char> = original.toCharArray()
         var openArr: Int64 = 0
         var openString: Bool = false
@@ -116,7 +138,7 @@ public class Decoder {
             if (0 != keyName) {
                 key += item
                 if (item == '\n') {
-                    throw TomlDecodeErrorException("Key name found without value. Reach end of line.")
+                    throw TomlDecodeErrorException("Key name found without value. Reach end of line. post = ${i}")
                 }
                 if (openString) {
                     if (item == openStrChar) {
@@ -170,7 +192,7 @@ public class Decoder {
                     dottedKey = false
                 }
                 else {
-                    let err: String="Found invalid character in key name: '${item}' Try quoting the key name. i = ${i}"
+                    let err: String="Found invalid character in key name: '${item}' Try quoting the key name. post = ${i}"
                     throw TomlDecodeErrorException(err)
                 }
             }
@@ -272,7 +294,7 @@ public class Decoder {
             if (item == Symbols.LF[0]) {// \n
                 if (openString || multilineStr) {
                     if (!multilineStr) {
-                        throw TomlDecodeErrorException("Unbalanced quotes")
+                        throw TomlDecodeErrorException("Unbalanced quotes: ${item.toString()}. post = ${i}")
                     }
                     if ((sl[i - 1] == Symbols.SINGLE_QUOTE[0] || sl[i - 1] == Symbols.QUOTE[0] ) && (sl[i - 2] == sl[i - 1])) {
                         sl[i] == sl[i - 1]
@@ -305,6 +327,13 @@ public class Decoder {
         var pos: Int64 = 0
         for (idx in 0..ss.size) {
             var line: String = ss[idx].trim()
+
+            this.lineNumber = idx
+            let (num, flagError): (Int64, Bool) = getLineNumber(line)
+            var errMessage: String = "Failed to parse the string: ${line}"
+            if (flagError) {
+                errMessage = "Failed to parse the ${num} line string"
+            }
 
             if (line.isEmpty()) {
                 continue
@@ -342,7 +371,7 @@ public class Decoder {
                         value = res[0]
                         vtype = res[1]
                     } catch (e: Exception) {
-                        throw TomlDecodeErrorException("${e.message}. ${original}, pos = ${pos}")
+                        throw TomlDecodeErrorException("${e.message}. ${original}, pos = ${pos}. ${errMessage}.")
                     }
                     if (vtype.equals("array")) {
                         let ja: JsonArray = JsonArray()
@@ -374,7 +403,7 @@ public class Decoder {
             if(line[0] == '[') {
                 arrayOfTables = false
                 if (line.size == 1) {
-                    throw TomlDecodeErrorException("Opening key group bracket on line by itself")
+                    throw TomlDecodeErrorException("${errMessage}. Opening key group bracket on line by itself")
                 }
                 var splitStr: String = ""
                 if (line[1] == Symbols.LEFT_SQUARE_BRACKET[0]) {// [
@@ -402,7 +431,7 @@ public class Decoder {
                 let lineSplited: Array<String> = line.split(splitStr)
 
                 if (lineSplited.size < i + 1 || lineSplited[lineSplited.size - 1].trim() != "") {
-                    throw TomlDecodeErrorException("Key group not on a line by itself.")
+                    throw TomlDecodeErrorException("${errMessage}. Key group not on a line by itself.")
                 }
                 let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited.slice(0, lineSplited.size-1), delimiter: splitStr).split("."))
 
@@ -420,7 +449,7 @@ public class Decoder {
                         while (!(groupStr[0] == groupStr[groupStr.size - 1]) || groupStr.size == 1) {
                             j += 1
                             if (j > groups.size + 2) {
-                                let err = "Invalid group name '${groupStr}' Something went wrong. pos = ${pos}.\n" +
+                                let err = "${errMessage}. Invalid group name '${groupStr}' Something went wrong. pos = ${pos}.\n" +
                                         original
                                 throw TomlDecodeErrorException(err)
                             }
@@ -432,7 +461,7 @@ public class Decoder {
                             case None => false
                             case Some(_) => true
                         }) {
-                            let err = "Invalid group name '${groups[i]}'. Try quoting it. pos = ${pos}.\n ${original}"
+                            let err = "${errMessage}. Invalid group name '${groups[i]}'. Try quoting it. pos = ${pos}.\n ${original}"
                             throw TomlDecodeErrorException(err)
                         }
                     }
@@ -442,20 +471,22 @@ public class Decoder {
                 subjo = jsons
                 for(l in 0..groups.size) {
                     let group: String = groups[l]
-                    if ("".equals(group)) { throw TomlDecodeErrorException("Can't have a keygroup with an empty") }
+                    if ("".equals(group)) {
+                        throw TomlDecodeErrorException("${errMessage}. Can't have a keygroup with an empty")
+                    }
                     try {
                         subjo.asObject().get(group).getOrThrow()
                         if (l == groups.size - 1) {
                             if (arrayListContains(implicitGroups, group)) {
                                 implicitGroups.removeIf({item => item == group})
                                 if (arrayOfTables) {
-                                    let err="An implicitly defined table can't be an array. pos = ${pos}.\n ${original}"
+                                    let err="${errMessage}. An implicitly defined table can't be an array. pos = ${pos}.\n ${original}"
                                     throw TomlDecodeErrorException(err)
                                 }
                             } else if (arrayOfTables) {
                                 subjo.asObject().get(group).getOrThrow().asObject().put(group, getEmptyTable())
                             } else {
-                                let err="What? ${group} already exists? ${subjo.toString()}. pos = ${pos}.\n" + original
+                                let err="What? ${group} already exists? ${subjo.toString()}. ${errMessage}. pos = ${pos}.\n" + original
                                 throw TomlDecodeErrorException(err)
                             }
                         }
@@ -529,7 +560,7 @@ public class Decoder {
         }
         return (p.size-1, poffset)
     }
-    
+
     /*
      * The Function is arrayListContains<T>
      *
@@ -547,7 +578,7 @@ public class Decoder {
         }
         return false
     }
-    
+
     /*
      * The Function is loadValue
      *
@@ -559,23 +590,30 @@ public class Decoder {
      */
     private func loadValue(vs: String): (ArrayList<String>, String) {
         var v: String = vs
+
+        let (num, flagError): (Int64, Bool) = getLineNumber(vs)
+        var errMessage: String = "Failed to parse the string: ${vs}"
+        if (flagError) {
+            errMessage = "Failed to parse the ${num} line string"
+        }
+
         let results: ArrayList<String> = ArrayList<String>()
         if (v.isEmpty()) {
-            throw Exception("Empty value is invalid")
+            throw Exception("${errMessage}. Empty value is invalid")
         }
         if (v.equals("true")) {
             results.append("true")
             return (results, "Bool")
         }
         else if (v.toLower() == "true") {
-            throw Exception("Only all lowercase booleans allowed")
+            throw Exception("${errMessage}. Only all lowercase booleans allowed.")
         }
         else if (v.equals("false")) {
             results.append("false")
             return (results, "Bool")
         }
         else if (v.toLower() == "false") {
-            throw Exception("Only all lowercase booleans allowed!")
+            throw Exception("${errMessage}. Only all lowercase booleans allowed!")
         }
         else if (v[0] == '\"' || v[0] == '\'') {
             let quotechar = v[0]
@@ -613,7 +651,7 @@ public class Decoder {
                     }
                     if (!oddbackslash) {
                         if (closed) {
-                            throw Exception("Found tokens after a closed string. Invalid TOML.")
+                            throw Exception("${errMessage}. Found tokens after a closed string. Invalid TOML.")
                         } else {
                             if (!triplequolte || triplequoltecount > 1) {
                                 closed = true
@@ -621,7 +659,7 @@ public class Decoder {
                                 triplequoltecount = 0
                             }
                         }
-                        
+
                     }
                 }
             }
@@ -637,7 +675,7 @@ public class Decoder {
                         backslash = !backslash
                     } else {
                         if (!getInchars(i[0]) && i[0] != 'u' && i[0] != 'U' && !backslash) {
-                            throw Exception()
+                            throw Exception("${errMessage}. ")
                         }
                     }
                 }
@@ -664,7 +702,7 @@ public class Decoder {
             return (results, "inline_object")
         }else {
             match (TIME_RE.matcher(v).fullMatch()) {
-                case Some(_) => throw Exception("Temporarily does not support time format parsing.")
+                case Some(_) => throw Exception("${errMessage}. Temporarily does not support time format parsing.")
                 case None => ()
             }
 
@@ -691,16 +729,16 @@ public class Decoder {
 
             if (v.contains('.') || (!v.contains('x') && (v.contains('e') || v.contains('E')))) {
                 if (v.contains('.') && v.split('.', 2)[1] == "") {
-                    throw Exception("This float is missing digits after the point")
+                    throw Exception("${errMessage}. This float is missing digits after the point")
                 }
                 if (!"0123456789".contains(v[0])) {
-                    throw Exception("This float doesn't have a leading digit")
+                    throw Exception("${errMessage}. This float doesn't have a leading digit")
                 }
 
                 try {
                     Float64.parse(v)
                 } catch (e: IllegalArgumentException) {
-                    throw IllegalArgumentException("now pass the string fail.")
+                    throw IllegalArgumentException("${errMessage}.")
                 }
 
                 itype = "Float64"
@@ -709,7 +747,7 @@ public class Decoder {
                 try {
                     Float64.parse(v)
                 } catch (e: IllegalArgumentException) {
-                    throw IllegalArgumentException("pass the string fail!")
+                    throw IllegalArgumentException("${errMessage}!")
                 }
 
                 itype = "Float64"
@@ -905,9 +943,9 @@ public class Decoder {
                 case None => ()
             }
         }
-        
+
     }
-    
+
     /*
      * The Function is load_unicode_escapes
      *
@@ -1037,7 +1075,7 @@ public class Decoder {
         }
         return v
     }
-    
+
     /*
      * The Function is readData
      *
@@ -1066,7 +1104,7 @@ public class Decoder {
         }
         data
     }
-    
+
     /*
      * The Function is getSplitOnQuotes
      *
@@ -1102,7 +1140,7 @@ public class Decoder {
         }
         return quotesplits
     }
-    
+
     /*
      * The Function is strictlyValidNum
      *
@@ -1131,7 +1169,7 @@ public class Decoder {
             case _ => true
         }
     }
-    
+
     /*
      * The Function is loadLine
      *
@@ -1178,7 +1216,7 @@ public class Decoder {
             } catch (e: IllegalArgumentException) {
                 println("now pass the Exception")
             }
-            
+
             /*
              * Temporarily does not support data time type format parsing
              * if _load_date(pair[-1]) is not None:
@@ -1189,12 +1227,19 @@ public class Decoder {
                 case Some(_) => break
                 case None => ()
             }
-             
+
             i += 1
             let prevVal: String = pair[pair.size - 1]
             pair = line.split('=', i)
             if (prevVal == pair[pair.size - 1]) {
-                throw Exception("Invalid date or number!")
+
+                let (num, flagError): (Int64, Bool) = getLineNumber(line)
+                var errMessage: String = "Failed to parse the string: ${line}"
+                if (flagError) {
+                    errMessage = "Failed to parse the ${num} line string"
+                }
+
+                throw Exception("${errMessage}. Invalid date or number!")
             }
             if (strictlyValid) {
                 strictlyValid = strictlyValidNum(pair[pair.size - 1])
