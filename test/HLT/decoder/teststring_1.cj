@@ -29,17 +29,17 @@ public class DecoderTest{
             returnFlag = 1
         }
         strData = jsonObj.toString()
-        var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
+        var arr_str_1:Array<String> = strData[1..strData.size -1].split(",")
         //println("strData1::> ${strData}")
         @Assert(arr_str_1.size,8)
         @Assert(arr_str_1[0],"\"str_1\":\"99 > 10\"") 
-        @Assert(arr_str_1[3].size,376)
+        @Assert(arr_str_1[3].size,400)
 
         //load(file: File)
         let file = File(filePath,OpenOption.Open(true,true))
         decoder.load(file)   
         strData =  decoder.decode().toString()
-        var arr_str_2:Array<String> = strData.substring(1,strData.size -2).split(",")
+        var arr_str_2:Array<String> = strData[1..strData.size -1].split(",")
         if(arr_str_1 != arr_str_2){
              returnFlag = 2
         }

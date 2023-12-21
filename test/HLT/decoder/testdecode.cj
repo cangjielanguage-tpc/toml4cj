@@ -26,7 +26,7 @@ public class DecoderTest{
         try {
             decoder.load(filePath_1)
             strData =  decoder.decode().toString()
-            arr_str = strData.substring(1,strData.size -2).split(",")
+            arr_str = strData[1..strData.size -1].split(",")
         } catch (e1: Exception) {
             @Assert(e1.toString().contains("The format of the file is not supported."),true)
             returnFlag = 0

@@ -31,7 +31,7 @@ public class DecoderTest{
         strData =  decoder.decode().toString()
         var bb:JsonValue = JsonValue.fromStr(strData)
         // println("a::> ${strData}")
-        arr_str = strData.substring(1,strData.size -2).split(",")
+        arr_str = strData[1..strData.size -1].split(",")
         @Assert(arr_str.size,10)
         //@Assert(arr_str[0],"\"int1\":\"+99\"")
         @Assert(arr_str[0],"\"int1\":\"99\"")
@@ -41,7 +41,7 @@ public class DecoderTest{
         decoder.load(file)   
         strData =  decoder.decode().toString()
         // println("strData::> ${strData}")
-        arr_str = strData.substring(1,strData.size -2).split(",")
+        arr_str = strData[1..strData.size -1].split(",")
         @Assert(arr_str.size,10)
         @Assert(arr_str[9],"\"int8\":\"0o242\"")
 

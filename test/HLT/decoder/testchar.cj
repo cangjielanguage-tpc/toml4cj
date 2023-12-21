@@ -33,7 +33,7 @@ public class DecoderTest{
             @Assert(e1.toString().contains("FSException: The path `../source哦吼/file` does not exist."),true)
         }
         strData =  decoder.decode().toString()
-        var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
+        var arr_str_1:Array<String> = strData[1..strData.size -1].split(",")
         @Assert(arr_str_1.size,7)
         //@Assert(arr_str_1[5],"\"char_6\":\"t\"")
         @Assert(arr_str_1[5], ##""char_6":"\\t""##)
@@ -42,7 +42,7 @@ public class DecoderTest{
         let file = File(filePath,OpenOption.Open(true,true))
         decoder.load(file)   
         strData =  decoder.decode().toString()
-        var arr_str_2:Array<String> = strData.substring(1,strData.size -2).split(",")
+        var arr_str_2:Array<String> = strData[1..strData.size -1].split(",")
         if(arr_str_1 != arr_str_2){
              returnFlag = 2
         }

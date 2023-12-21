@@ -17,7 +17,7 @@ main() {
     var path2: String = getcwd()
     var arr: Array<String> = [
         "${path2}/string001.toml" , 
-        "${path2}/string002.toml", 
+        "${path2}/string002.toml" , 
         "${path2}/string003.toml",
         "${path2}/string004.toml",
         "${path2}/string005.toml",

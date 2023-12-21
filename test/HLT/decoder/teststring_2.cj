@@ -28,7 +28,7 @@ public class DecoderTest{
         try{
             var jsonObj = decoder.decode()
             strData = jsonObj.toString()
-            var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
+            var arr_str_1:Array<String> = strData[1..strData.size -1].split(",")
         }catch(e1:Exception){
             e1.printStackTrace()
             println("e1.toString() = ${e1.toString()}")

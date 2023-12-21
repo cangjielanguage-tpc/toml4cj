@@ -23,7 +23,7 @@ main() {
     decoder.load("keys002.toml")
     json = decoder.decode()
     println(json.toJsonString())
-    if (!(json.toString().equals(b) || json.toString().equals(b_ci))) {
+    if (!(json.toString() == b) || json.toString() == b_ci) {
         return 2
     }
     return 0

@@ -44,7 +44,7 @@ public class DecoderTest {
             returnFlag = 3
         }
         @Assert(strData,"{\"bool_2\":\"true\",\"bool_3\":\"false\",\"bool_4\":\"true\"}")
-        var arr_str_1: Array<String> = strData.substring(1, strData.size - 2).split(",")
+        var arr_str_1: Array<String> = strData[1..strData.size - 1].split(",")
         @Assert(arr_str_1.size,3)
         @Assert(arr_str_1[0],"\"bool_2\":\"true\"")
 
@@ -54,7 +54,7 @@ public class DecoderTest {
         strData = decoder.decode().toString()
 
         //println("strData::> ${strData}")
-        var arr_str_2: Array<String> = strData.substring(1, strData.size - 2).split(",")
+        var arr_str_2: Array<String> = strData[1..strData.size - 1].split(",")
         if (arr_str_1 != arr_str_2) {
             returnFlag = 4
         }
