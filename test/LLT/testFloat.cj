@@ -15,6 +15,7 @@ let c = ##"{"flt1":"1.0","flt2":"3.1415","flt3":"-0.01"}"##
 main() {
     var path2: String = getcwd()
     let decoder: Decoder = Decoder()
+    println(path2)
     decoder.load("${path2}/float001.toml")
     var json = decoder.decode()
     var str: String = json.toString()

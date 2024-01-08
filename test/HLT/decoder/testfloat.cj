@@ -38,7 +38,7 @@ public class DecoderTest{
             @Assert(e1.toString().contains("IllegalArgumentException: The format of the file is not supported."),true)
         }
         strData = jsonObj.toString()
-        var arr_str_1:Array<String> = strData.substring(1,strData.size -2).split(",")
+        var arr_str_1:Array<String> = strData[1..strData.size -1].split(",")
         @Assert(arr_str_1.size,7)
         //@Assert(arr_str_1[0],"\"flt1\":\"+1.0\"")
         @Assert(arr_str_1[0],"\"flt1\":\"1.0\"")
@@ -49,7 +49,7 @@ public class DecoderTest{
         decoder.load(file)   
         strData =  decoder.decode().toString()
         // println("strData2::> ${strData}")
-        var arr_str_2:Array<String> = strData.substring(1,strData.size -2).split(",")
+        var arr_str_2:Array<String> = strData[1..strData.size -1].split(",")
         if(arr_str_1 != arr_str_2){
              returnFlag = 2
         }

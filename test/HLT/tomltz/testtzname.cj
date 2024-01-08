@@ -32,7 +32,8 @@ public class TomlTzTest{
             let tomltz_3 = TomlTz("哈嘿哦吼") 
             tzname = tomltz_3.tzname()
         }catch(e1:Exception){
-            @Assert(e1.toString().contains("IndexOutOfBoundsException"),true)
+            println(e1.toString())
+            @Assert(e1.toString().contains("IllegalArgumentException"),true)
             returnFlag = 0
         }
         
