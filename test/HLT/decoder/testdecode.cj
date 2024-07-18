@@ -2,10 +2,10 @@
 //3rd_party_lib:toml4cj/build/toml4cj
 //data_file:testbool.cj
 //data_file:../sourcefile/source_other.properties
-from toml4cj import decoders.*
-from std import os.posix.*
-from std import unittest.*
-from std import fs.*
+import toml4cj.decoders.*
+import std.os.posix.*
+import std.unittest.*
+import std.fs.*
 
 /*
     public init()

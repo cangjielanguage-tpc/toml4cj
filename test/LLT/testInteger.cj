@@ -3,8 +3,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 //let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
 let a = ##"{"int1":"99","int2":"42","int3":"0","int4":"-17"}"##
 //let b = ##"{"int5":"1_000","int6":"5_349_221","int7":"53_49_221","int8":"1_2_3_4_5"}"##

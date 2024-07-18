@@ -52,14 +52,14 @@ MIT License
 
 ```
 标准库 
-from std import io.*
-from std import collection.*
-from std import regex.*
-from std import unicode.*
-from std import convert.*
-from std import time.*
-from encoding import json.*
-from serialization import serialization.*
+import std.io.*
+import std.collection.*
+import std.regex.*
+import std.unicode.*
+import std.convert.*
+import std.time.*
+import encoding.json.*
+import serialization.serialization.*
 
 ```
 
@@ -97,7 +97,7 @@ bare-key = "value"
 1234 = "value"
 ```
 ```cangjie
-from toml4cj import decoders.*
+import toml4cj.decoders.*
 
 main() {
     let decoder: Decoder = Decoder()

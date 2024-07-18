@@ -67,7 +67,7 @@ bare-key = "value"
 ```
 
 ```toml4cj
-from toml4cj import decoders.*
+import toml4cj.decoders.*
 
 main() {
     let decoder: Decoder = Decoder()
@@ -145,7 +145,7 @@ bare-key = "value"
 ```
 
 ```toml4cj
-from toml4cj import decoders.*
+import toml4cj.decoders.*
 
 main() {
     let decoder: Decoder = Decoder()
@@ -230,7 +230,7 @@ bare-key = "value"
 ```
 
 ```toml4cj
-from toml4cj import decoders.*
+import toml4cj.decoders.*
 
 main() {
     let decoder: Decoder = Decoder()

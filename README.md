@@ -3,9 +3,9 @@
 </div>
 
 <p align="center">
-<img alt="" src="https://img.shields.io/badge/release-v0.0.3-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/release-v0.0.1-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/build-pass-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjc-v0.51.4-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjc-v0.53.4-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-94.3%25-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/project-open-brightgreen" style="display: inline-block;" />
 </p>
@@ -59,11 +59,12 @@ TOML4CJ 旨在成为一个语义明显且易于阅读的最小化配置文件格
 │   ├── example.toml
 │   └── multiline_string.toml
 ├── src
-│   ├── decoder.cj
-│   ├── exception.cj
-│   ├── POJO.cj
-│   ├── symbols.cj
-│   └── toml_tz.cj
+│   └── decoders 
+│       ├── decoder.cj
+│       ├── exception.cj
+│       ├── symbols.cj
+│       ├── toml_tz.cj
+│   └── package.cj 
 └── test
     ├── HLT
     ├── LLT
@@ -96,17 +97,10 @@ public func decode()
 
 ### 编译
 
-```shell
-git clone https://gitee.com/HW-PLLab/toml4cj.git
-git clone https://gitee.com/HW-PLLab/testJekins.git
-cd toml4cj
+   ```
+   cjpm build
+   ```
 
-cp -r ../testJekins/src/ci_test .;
-python3 ci_test/main.py build   ---> 编译
-python3 ci_test/main.py test;   ---> 执行 test/LLT 用例
-```
-
-test/LLT 用例书写参考：https://gitee.com/HW-PLLab/cangjie-library-pages/wikis 的门禁测试脚本使用方式
 
 ## 功能示例
 
@@ -118,7 +112,7 @@ bare-key = "value"
 ```
 
 ```shell
-from toml4cj import decoders.*
+import toml4cj.decoders.*
 
 main() {
     let decoder: Decoder = Decoder()
@@ -138,8 +132,8 @@ main() {
   用例执行需要 toml 文件
 
 ```toml4cj
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 main () {
     var path2: String = "${getcwd()}/test.properties"
     let decoder: Decoder = Decoder()
@@ -169,8 +163,8 @@ return 1
  用例执行需要toml文件
 
 ```toml4cj
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
 let b = ##"{"int5":"1_000","int6":"5_349_221","int7":"53_49_221","int8":"1_2_3_4_5"}"##
 main() {
@@ -195,6 +189,15 @@ main() {
 ```shell
 {"key":"value","bare_key":"value","bare-key":"value","1234":"value"}
 ```
+
+## 约束与限制
+
+在下述版本验证通过：
+
+    Cangjie Version: 0.53.4
+
+## 开源协议
+本项目基于 [MIT License](./LICENSE)，请自由的享受和参与开源。
 
 ## <img alt="" src="./doc/assets/readme-icon-contribute.png" style="display: inline-block;" width=4%/> 参与贡献
 

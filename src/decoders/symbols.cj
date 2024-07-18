@@ -7,7 +7,7 @@
  * This file is about Symbols
  */
 
-package decoders
+package toml4cj.decoders
 
 /**
  * The class is Symbols

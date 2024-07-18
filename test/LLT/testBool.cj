@@ -2,8 +2,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 
 let str = ##"{"bool1":"true","bool2":"false"}"##
 main() {

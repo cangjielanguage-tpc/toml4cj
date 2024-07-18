@@ -1,9 +1,9 @@
 
 //3rd_party_lib:toml4cj/build/toml4cj
 
-from toml4cj import decoders.*
-from std import os.posix.*
-from std import unittest.*
+import toml4cj.decoders.*
+import std.os.posix.*
+import std.unittest.*
 
 /*
     public init(tomlOffset: String)

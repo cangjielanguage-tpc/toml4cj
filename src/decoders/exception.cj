@@ -7,7 +7,7 @@
  * This file is about toml4cj exception
  */
 
-package decoders
+package toml4cj.decoders
 
 /**
  * The class is TomlBaseException inherited from Exception

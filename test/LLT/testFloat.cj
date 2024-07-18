@@ -4,8 +4,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 //let a = ##"{"flt1":"+1.0","flt2":"3.1415","flt3":"-0.01","flt4":"5e+22","flt5":"1e06","flt6":"-2E-2","flt7":"6.626e-34"}"##
 let a = ##"{"flt1":"1.0","flt2":"3.1415","flt3":"-0.01","flt4":"5e+22","flt5":"1e06","flt6":"-2E-2","flt7":"6.626e-34"}"##
 //let b = ##"{"flt8":"224_617.445_991_228"}"##
