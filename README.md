@@ -15,7 +15,7 @@
 TOML4CJ 旨在成为一个语义明显且易于阅读的最小化配置文件格式。TOML4CJ 被设计成可以无歧义地映射为哈希表。TOML4CJ 应该能很容易地被解析成各种语言中的数据结构。
 参考toml语法规约地址: https://toml.io/cn/
 
-该项目是仓颉语言实现 TOML4CJ v1.0.0 的语言库。参考地址：https://github.com/uiri/toml
+该项目是仓颉语言实现 TOML4CJ v1.0.0 的语言库。
 
 ### 特性
 
