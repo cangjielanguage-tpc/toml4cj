@@ -2,7 +2,7 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
+import toml4cj.decoders.*
 
 main() {
 //    let decoder: Decoder = Decoder("nihao")

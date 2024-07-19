@@ -1,9 +1,9 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
-from std import time.*
+import toml4cj.decoders.*
+import std.os.posix.*
+import std.time.*
 
 var returnFlag: Int32 = 0
 var dst:String = ""

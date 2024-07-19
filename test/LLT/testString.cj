@@ -9,8 +9,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 //let str = ##"{"str":"I'm a string. \"You can quote me\". NametJo"}"##
 let str = ##"{"str":"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."}"##
 main() {

@@ -2,8 +2,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 let str = ##"{"key":"value","another":"# This is not a comment"}"##
 main() {
     var path2: String = getcwd()

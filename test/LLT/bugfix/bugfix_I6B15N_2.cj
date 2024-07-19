@@ -2,8 +2,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from encoding import json.*
+import toml4cj.decoders.*
+import encoding.json.*
 
 main() {
 	var url: String = "2.toml"

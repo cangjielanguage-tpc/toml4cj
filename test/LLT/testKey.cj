@@ -3,8 +3,8 @@
 // EXEC: cjc %import-path %L %l %f
 // EXEC: ./main
 
-from toml4cj import decoders.*
-from std import os.posix.*
+import toml4cj.decoders.*
+import std.os.posix.*
 
 let a = ##"{"key":"value","bare_key":"value","bare-key":"value","1234":"value"}"##
 let b = ##"{"127":{"0":{}},"1":"value","\"character encoding\"":"value","\"ʎǝʞ\"":"value","'key2'":"value","'quoted \"value\"'":"value"}"##
