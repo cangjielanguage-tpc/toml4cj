@@ -1,0 +1,37 @@
+[envs]
+PATH="#{nushell_dir}"
+NU_PLUGIN_DIRS="#{corn_home}/#{corn_name}/plugins"
+XDG_CONFIG_HOME="#{corn_home}"
+
+[vars]
+nushell_dir="#{corn_dir}/#{corn_name}"
+nushell_config="#{corn_home}/#{corn_name}/config.nu"
+nushell_env_config="#{corn_home}/#{corn_name}/env.nu"
+
+[[config-exec]]
+exec="#{nushell_dir}/nu"
+args=[
+ "-n",
+ "-c",
+ """
+ if (('#{nushell_config}' | path exists) == false) { config nu --default | save #{nushell_config} }
+ """,
+]
+[[config-exec1]]
+exec="#{nushell_dir}/nu"
+args=[
+ "-n",
+ "-c",
+ "if (('#{nushell_env_config}' | path exists) == false) { config env --default | save #{nushell_env_config} }",
+]
+
+[exec]
+exec="#{nushell_dir}/nu"
+args=[
+ "--login",
+ "--config","#{corn_home}/#{corn_name}/config.nu",
+ "--env-config","#{corn_home}/#{corn_name}/env.nu",
+]
+
+[exec-by-plat.linux.envs]
+EDITOR="#{EDITOR+environ}"
