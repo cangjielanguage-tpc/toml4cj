@@ -113,7 +113,6 @@ public class Decoder {
         let original: String = readData()
 
         this.slLine = original.split(Symbols.LF)
-
         var sl: Array<Rune> = original.toRuneArray()
         var openArr: Int64 = 0
         var openString: Bool = false
@@ -297,7 +296,7 @@ public class Decoder {
                         throw TomlDecodeErrorException("Unbalanced quotes: ${item.toString()}. post = ${i}")
                     }
                     if ((sl[i - 1] == Rune(Symbols.SINGLE_QUOTE[0]) || sl[i - 1] == Rune(Symbols.QUOTE[0])) && (sl[i - 2] == sl[i - 1])) {
-                        sl[i] == sl[i - 1]
+                        sl[i] = sl[i - 1]
                         if(sl[i - 3] == sl[i - 1]) {
                             sl[i - 3] = Rune(Symbols.SPACE[0])
                         }
@@ -319,7 +318,6 @@ public class Decoder {
             }
         }
         var s: String = String(sl)
-
         var ss: Array<String> = s.split(Symbols.LF)
         var multiKey: String = ""
         var multilineStrStr: String = ""
@@ -327,7 +325,6 @@ public class Decoder {
         var pos: Int64 = 0
         for (idx in 0..ss.size) {
             var line: String = ss[idx].trim()
-
             this.lineNumber = idx
             let (num, flagError): (Int64, Bool) = getLineNumber(line)
             var errMessage: String = "Failed to parse the string: ${line}"
@@ -347,7 +344,6 @@ public class Decoder {
             if (line == "" && (!multiKey.isEmpty() || multiBackSlash)) {
                 continue
             }
-
             if (!multiKey.isEmpty()) {
                 if (multiBackSlash) {
                     multilineStrStr += line
@@ -400,7 +396,6 @@ public class Decoder {
                 }
                 continue
             }
-
             if(Rune(line[0]) == r'[') {
                 arrayOfTables = false
                 if (line.size == 1) {
@@ -471,7 +466,6 @@ public class Decoder {
                     }
                     i += 1
                 }
-
                 subjo = jsons
                 for(l in 0..groups.size) {
                     let group: String = groups[l]
@@ -498,17 +492,14 @@ public class Decoder {
                         if (i != (groups.size - 1)) {
                             implicitGroups.append(group)
                         }
-
                         subjo.asObject().put(group, getEmptyTable())
                         if (i == groups.size - 1 && arrayOfTables) {
-                            subjo.asObject().put(group, JsonArray(Array<JsonValue>([getEmptyTable()])) )
+                            subjo.asObject().put(group, JsonArray([getEmptyTable()].toArray()) )
                         }
-
                     }
                     subjo = subjo.asObject().get(group).getOrThrow()
                 }
-            }
-            else if (line.contains("=")) {
+            } else if (line.contains("=")) {
                 let resLoadLine: Option<(String,String,Bool)> = loadLine(subjo.asObject(), line, multiKey, multiBackSlash)
                 match (resLoadLine) {
                     case Some(v) =>
@@ -551,6 +542,7 @@ public class Decoder {
             let newpStr: String = newp[newp.size - 1]
             poffset = p.size - newpStr.size
             p = newpStr
+
         }
 
         if (Rune(p[0]) != r'"' && Rune(p[0]) != r'\'') {
@@ -594,7 +586,6 @@ public class Decoder {
      */
     private func loadValue(vs: String): (ArrayList<String>, String) {
         var v: String = vs
-
         let (num, flagError): (Int64, Bool) = getLineNumber(vs)
         var errMessage: String = "Failed to parse the string: ${vs}"
         if (flagError) {
@@ -702,6 +693,7 @@ public class Decoder {
                 results.append(v[1 .. v.size-1])
             } else {
                 results.append("")
+
             }
             return (results, "str")
         }
@@ -727,7 +719,6 @@ public class Decoder {
              *     throw Exception("Weirdness with leading zeroes or underscores in your number.")
              * }
              */
-
             var itype: String = "Int64"
             var neg: Bool = false
             if (Rune(v[0]) == r'-') {
@@ -880,8 +871,9 @@ public class Decoder {
                         aArray.set(b, aArray[b] + "," + aArray[b + 1])
                         ab = aArray[b].trim()
                         if (b < aArray.size - 2) {
-                            aArray = aArray[0..(b + 1)]
-                            aArray.appendAll(aArray[(b + 2)..(aArray.size)])
+                            var tempArray = aArray[0..(b + 1)]
+                            tempArray.appendAll(aArray[(b + 2)..])
+                            aArray = tempArray
                         } else {
                             aArray = aArray[0..(b + 1)]
                         }
@@ -1106,7 +1098,7 @@ public class Decoder {
                 }
                 let res: StringBuilder = StringBuilder()
                 var readLength: Int64 = 0
-                var buffer: Array<Byte> = Array<Byte>(DEFAULT_BUFFER_SIZE, item: 0)
+                var buffer: Array<Byte> = Array<Byte>(DEFAULT_BUFFER_SIZE, repeat: 0)
                 do {
                     readLength = s.read(buffer)
                     if (0 != readLength) {
@@ -1148,7 +1140,11 @@ public class Decoder {
             if (quoted) {
                 quotesplits.append(item)
             } else {
-                quotesplits.appendAll(item.split("'"))
+                 if (item == "") {
+                    quotesplits.append(item)
+                 } else {
+                    quotesplits.appendAll(item.split("'"))
+                 }
                 quoted = !quoted
             }
         }
@@ -1211,13 +1207,11 @@ public class Decoder {
             quoted = !quoted
         }
         var pair = line.split("=", i+1)
-
         var strictlyValid: Bool = strictlyValidNum(pair[pair.size - 1])
         match (numberWithUnderScores.matcher(pair[pair.size - 1]).fullMatch()) {
             case Some(_) => pair[pair.size - 1] = pair[pair.size - 1].replace("_", "")
             case None => ()
         }
-
         while (pair[pair.size - 1].size > 0 && (Rune(pair[pair.size - 1][0]) != r' ' && Rune(pair[pair.size - 1][0]) != r'\t' &&
                                  Rune(pair[pair.size - 1][0]) != r'\'' && Rune(pair[pair.size - 1][0]) != r'"' &&
                                  Rune(pair[pair.size - 1][0]) != r'[' && Rune(pair[pair.size - 1][0]) != r'{' &&
@@ -1291,10 +1285,9 @@ public class Decoder {
                 jv = jv.get(levels[levelIndx]).getOrThrow().asObject()
             }
             pair[0] = levels[levels.size-1].trim()
-        } else if ((Rune(pair[0][0]) == r'\"' || Rune(pair[0][0]) == r'\'') && (pair[0][pair.size - 1] == pair[0][0])) {
+        } else if ((Rune(pair[0][0]) == r'"' || Rune(pair[0][0]) == r'\'') && (pair[0][pair[0].size - 1] == pair[0][0])) {
             pair[0] = unescape(pair[0][1..pair[0].size - 1])
         }
-
         let (k_tuple, koffset_tuple) = loadLineMultilineStr(pair[1])
 
         var k = k_tuple
