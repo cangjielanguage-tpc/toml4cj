@@ -97,7 +97,7 @@ public class Decoder {
         }
         mode = DecodeMode.STREAM
         if(!file.canRead()) { throw Exception("Open file failed") }
-        if (!file.info.path.fileName.getOrThrow().endsWith(".toml")) {
+        if (!file.info.path.fileName.endsWith(".toml")) {
             throw IllegalArgumentException("The format of the file is not supported.")
         }
         stream = Some(file)

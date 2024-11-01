@@ -4,7 +4,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.os.posix.*
+import std.posix.*
 
 let a = ##"{"key":"value","bare_key":"value","bare-key":"value","1234":"value"}"##
 let b = ##"{"127.0.0.1":"value","character encoding":"value","ʎǝʞ":"value","key2":"value","quoted \"value\"":"value"}"##

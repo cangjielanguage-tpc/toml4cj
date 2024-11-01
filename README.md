@@ -5,7 +5,7 @@
 <p align="center">
 <img alt="" src="https://img.shields.io/badge/release-v0.0.1-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/build-pass-brightgreen" style="display: inline-block;" />
-<img alt="" src="https://img.shields.io/badge/cjc-v0.55.3-brightgreen" style="display: inline-block;" />
+<img alt="" src="https://img.shields.io/badge/cjc-v0.56.4-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/cjcov-94.3%25-brightgreen" style="display: inline-block;" />
 <img alt="" src="https://img.shields.io/badge/project-open-brightgreen" style="display: inline-block;" />
 </p>
@@ -133,7 +133,7 @@ main() {
 
 ```toml4cj
 import toml4cj.decoders.*
-import std.os.posix.*
+import std.posix.*
 main () {
     var path2: String = "${getcwd()}/test.properties"
     let decoder: Decoder = Decoder()
@@ -164,7 +164,7 @@ return 1
 
 ```toml4cj
 import toml4cj.decoders.*
-import std.os.posix.*
+import std.posix.*
 let a = ##"{"int1":"+99","int2":"42","int3":"0","int4":"-17"}"##
 let b = ##"{"int5":"1_000","int6":"5_349_221","int7":"53_49_221","int8":"1_2_3_4_5"}"##
 main() {

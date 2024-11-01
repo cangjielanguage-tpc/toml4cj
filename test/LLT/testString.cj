@@ -10,7 +10,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.os.posix.*
+import std.posix.*
 //let str = ##"{"str":"I'm a string. \"You can quote me\". NametJo"}"##
 let str = ##"{"str":"I'm a string. \"You can quote me\". Name\tJosé\nLocation\tSF."}"##
 main() {

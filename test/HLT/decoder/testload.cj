@@ -4,7 +4,7 @@
 //data_file:testbool.cj
 //data_file:../sourcefile/source_other.properties
 import toml4cj.decoders.*
-import std.os.posix.*
+import std.posix.*
 import std.unittest.*
 import std.fs.*
 
