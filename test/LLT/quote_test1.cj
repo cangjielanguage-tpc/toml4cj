@@ -3,7 +3,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.os.posix.*
+import std.posix.*
 
 main() {
     var path2: String = getcwd()
