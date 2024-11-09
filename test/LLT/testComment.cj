@@ -3,7 +3,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 let str = ##"{"key":"value","another":"# This is not a comment"}"##
 main() {
     var path2: String = getcwd()

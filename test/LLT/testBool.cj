@@ -3,7 +3,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 
 let str = ##"{"bool1":"true","bool2":"false"}"##
 main() {

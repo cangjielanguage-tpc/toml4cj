@@ -97,7 +97,7 @@ public class Decoder {
         }
         mode = DecodeMode.STREAM
         if(!file.canRead()) { throw Exception("Open file failed") }
-        if (!file.info.path.fileName.endsWith(".toml")) {
+        if (!file.info.path.fileName.getOrThrow().endsWith(".toml")) {
             throw IllegalArgumentException("The format of the file is not supported.")
         }
         stream = Some(file)
@@ -1098,7 +1098,7 @@ public class Decoder {
                 }
                 let res: StringBuilder = StringBuilder()
                 var readLength: Int64 = 0
-                var buffer: Array<Byte> = Array<Byte>(DEFAULT_BUFFER_SIZE, repeat: 0)
+                var buffer: Array<Byte> = Array<Byte>(DEFAULT_BUFFER_SIZE, item: 0)
                 do {
                     readLength = s.read(buffer)
                     if (0 != readLength) {

@@ -3,7 +3,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 main () {
     var path2: String = "${getcwd()}/test.properties"
     let decoder: Decoder = Decoder()

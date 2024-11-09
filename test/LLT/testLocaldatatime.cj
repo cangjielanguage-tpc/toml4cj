@@ -3,7 +3,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 
 //不支持解析时间格式
 main() {
