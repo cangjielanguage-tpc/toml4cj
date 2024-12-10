@@ -37,7 +37,7 @@ public class DecoderTest{
 
         //load(file: File)
         try {
-            let file = File(filePath_2,OpenOption.Open(true,true))
+            let file = File(filePath_2,OpenMode.ReadWrite)
             decoder.load(file)   
         } catch (e2: Exception){
             println("e2>>>> ${e2}")

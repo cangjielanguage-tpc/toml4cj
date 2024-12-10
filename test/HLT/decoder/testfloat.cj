@@ -45,7 +45,7 @@ public class DecoderTest{
         @Assert(arr_str_1[2],"\"flt3\":\"-0.01\"")
 
         //load(file: File)
-        let file = File(filePath,OpenOption.Open(true,true))
+        let file = File(filePath,OpenMode.ReadWrite)
         decoder.load(file)   
         strData =  decoder.decode().toString()
         // println("strData2::> ${strData}")

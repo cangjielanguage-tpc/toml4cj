@@ -49,7 +49,7 @@ public class DecoderTest {
         @Assert(arr_str_1[0],"\"bool_2\":\"true\"")
 
         //load(file: File)
-        let file = File(filePath,OpenOption.Open(true,true))
+        let file = File(filePath,OpenMode.ReadWrite)
         decoder.load(file)
         strData = decoder.decode().toString()
 
