@@ -36,7 +36,7 @@ public class DecoderTest{
         @Assert(arr_str_1[3].size,400)
 
         //load(file: File)
-        let file = File(filePath,OpenOption.Open(true,true))
+        let file = File(filePath,OpenMode.ReadWrite)
         decoder.load(file)   
         strData =  decoder.decode().toString()
         var arr_str_2:Array<String> = strData[1..strData.size -1].split(",")

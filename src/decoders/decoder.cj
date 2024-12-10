@@ -81,7 +81,7 @@ public class Decoder {
         if (!arr[arr.size - 1].contains(".") || arr[arr.size - 1].size == 0) {
             throw IllegalArgumentException("The format of the file is not supported.")
         }
-        load(File.openRead(pn))
+        load(File(pn, Read))
     }
     /**
      * The Function is load

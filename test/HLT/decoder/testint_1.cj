@@ -37,7 +37,7 @@ public class DecoderTest{
         @Assert(arr_str[0],"\"int1\":\"99\"")
 
         //load(file: File)
-        let file = File(filePath,OpenOption.Open(true,true))
+        let file = File(filePath,OpenMode.ReadWrite)
         decoder.load(file)   
         strData =  decoder.decode().toString()
         // println("strData::> ${strData}")

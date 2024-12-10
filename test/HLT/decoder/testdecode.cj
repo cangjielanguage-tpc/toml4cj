@@ -35,7 +35,7 @@ public class DecoderTest{
         //load(file: File)
         let decoder_2 = Decoder() 
         try {
-            let file = File(filePath_2,OpenOption.Open(true,true))
+            let file = File(filePath_2,OpenMode.ReadWrite)
             decoder_2.load(file)   
             strData =  decoder_2.decode().toString()
             println("strData::> ${strData}")
