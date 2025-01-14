@@ -434,12 +434,12 @@ public class Decoder {
                 let groups: ArrayList<String> = ArrayList<String>(String.join(lineSplited.slice(0, lineSplited.size-1), delimiter: splitStr).split("."))
 
                 for (index in groups.size-1..=0:-1) {
-                    if (groups[index] == "") { groups.remove(index) }
+                    if (groups[index] == "") { groups.remove(at: index) }
                 }
 
                 i = 0
                 while(i < groups.size) {
-                    groups.set(i, groups[i].trim())
+                    groups[i] = groups[i].trim()
                     if (groups[i].size > 0 && (groups[i][0] == Symbols.QUOTE[0] || groups[i][0] == Symbols.SINGLE_QUOTE[0])) {
 
                         var groupStr: String = groups[i]
@@ -490,7 +490,7 @@ public class Decoder {
                         }
                     } catch(e: Exception) {
                         if (i != (groups.size - 1)) {
-                            implicitGroups.append(group)
+                            implicitGroups.add(group)
                         }
                         subjo.asObject().put(group, getEmptyTable())
                         if (i == groups.size - 1 && arrayOfTables) {
@@ -597,14 +597,14 @@ public class Decoder {
             throw Exception("${errMessage}. Empty value is invalid")
         }
         if (v == "true") {
-            results.append("true")
+            results.add("true")
             return (results, "Bool")
         }
         else if (v.toLower() == "true") {
             throw Exception("${errMessage}. Only all lowercase booleans allowed.")
         }
         else if (v == "false") {
-            results.append("false")
+            results.add("false")
             return (results, "Bool")
         }
         else if (v.toLower() == "false") {
@@ -690,9 +690,9 @@ public class Decoder {
                 }
             }
             if (v.size > 2) {
-                results.append(v[1 .. v.size-1])
+                results.add(v[1 .. v.size-1])
             } else {
-                results.append("")
+                results.add("")
 
             }
             return (results, "str")
@@ -702,7 +702,7 @@ public class Decoder {
         } else if (Rune(v[0]) == r'{'){
             let inlineObj = JsonObject()
             loadInlineObject(v, inlineObj)
-            results.append(inlineObj.toString())
+            results.add(inlineObj.toString())
             return (results, "inline_object")
         }else {
             match (TIME_RE.matcher(v).fullMatch()) {
@@ -763,7 +763,7 @@ public class Decoder {
             if (neg) {
                 v = "-" + v
             }
-            results.append(v)
+            results.add(v)
             return (results, itype)
         }
 
@@ -806,7 +806,7 @@ public class Decoder {
         if (!str1_1.contains("[") || !(str1_1.split("[")[0].trim() == "")) {
             let strArray: Bool = loadArrayIsstrarray(a)
             if (!str1_1.trim().startsWith("{")) {
-                aArray.appendAll(str1_1.split(","))
+                aArray.add(all: str1_1.split(","))
             } else {
                 // a is an inline object, and we must find matching parentheses to define the group
                 let new_a: ArrayList<String> = ArrayList<String>()
@@ -845,7 +845,7 @@ public class Decoder {
                     // Increase end_group_index by 1 to get the closing bracket
                     end_group_index += 1
 
-                    new_a.append(a[start_group_index..end_group_index])
+                    new_a.add(a[start_group_index..end_group_index])
 
                     /*
                      * The next start index is at least after the closing bracket,
@@ -868,11 +868,11 @@ public class Decoder {
                             ab[0] == ab[1] && ab[1] == ab[2] &&
                             ab[ab.size - 2] != ab[0] &&
                             ab[ab.size - 3] != ab[0])) {
-                        aArray.set(b, aArray[b] + "," + aArray[b + 1])
+                        aArray[b] = aArray[b] + "," + aArray[b + 1]
                         ab = aArray[b].trim()
                         if (b < aArray.size - 2) {
                             var tempArray = aArray[0..(b + 1)]
-                            tempArray.appendAll(aArray[(b + 2)..])
+                            tempArray.add(all: aArray[(b + 2)..])
                             aArray = tempArray
                         } else {
                             aArray = aArray[0..(b + 1)]
@@ -892,14 +892,14 @@ public class Decoder {
                 } else if (al[i] == r']') {
                     openarr -= 1
                 } else if (al[i] == r',' && openarr != 0) {
-                    aArray.append(String(al[j..i]))
+                    aArray.add(String(al[j..i]))
                     j = i + 1
                 }
             }
-            aArray.append(String(al[j..al.size]))
+            aArray.add(String(al[j..al.size]))
         }
         for (i in 0..aArray.size) {
-            aArray.set(i, aArray[i].trim())
+            aArray[i] = aArray[i].trim()
             if (!(aArray[i] == "")) {
                 let (nval, ntype): (ArrayList<String>, String) = loadValue(aArray[i])
                 if (!atype.isEmpty()) {
@@ -909,7 +909,7 @@ public class Decoder {
                 } else {
                     atype = ntype
                 }
-                retval.appendAll(nval)
+                retval.add(all: nval)
             }
         }
         return retval
@@ -933,11 +933,11 @@ public class Decoder {
         }
         while (candidate_groups.size > 0){
             var candidate_group: String = candidate_groups[0]
-            candidate_groups.remove(0)
+            candidate_groups.remove(at: 0)
             let val = candidate_group.split("=", 2)
             let value = val[1].trim()
             if (value[0] == value[value.size-1] && (Rune(value[0]) == r'\'' || Rune(value[0]) == r'"') || "-0123456789".contains(value[0].toString()) || (value == "true" || value == "false") || (Rune(value[0]) == r'[' && Rune(value[value.size -1]) == r']') || (Rune(value[0]) == r'{' && Rune(value[value.size -1]) == r'}') ) {
-                groups.append(candidate_group)
+                groups.add(candidate_group)
             }
             else {
                 throw Exception("not Support4")
@@ -1134,16 +1134,16 @@ public class Decoder {
                     doubuleQuoteArr = Array<String>()
                 }
             }
-            quotesplits.appendAll(singleQuotesArr)
+            quotesplits.add(all: singleQuotesArr)
         }
         for ( item in doubuleQuoteArr) {
             if (quoted) {
-                quotesplits.append(item)
+                quotesplits.add(item)
             } else {
                  if (item == "") {
-                    quotesplits.append(item)
+                    quotesplits.add(item)
                  } else {
-                    quotesplits.appendAll(item.split("'"))
+                    quotesplits.add(all: item.split("'"))
                  }
                 quoted = !quoted
             }
@@ -1263,10 +1263,10 @@ public class Decoder {
                 levels = ArrayList<String>()
                 for (quoteSplit in quoteSplits) {
                     if (quoted) {
-                        levels.append(quoteSplit)
+                        levels.add(quoteSplit)
                     } else {
                         for (arri in quoteSplit.split(".")) {
-                            levels.append(arri.trim())
+                            levels.add(arri.trim())
                         }
                     }
                     quoted = !quoted
@@ -1275,7 +1275,7 @@ public class Decoder {
                 levels = ArrayList<String>(pair[0].split("."))
             }
             while (levels[levels.size-1] == "") {
-                levels.remove(levels.size-1)
+                levels.remove(at: levels.size-1)
             }
             for (levelIndx in 0..levels.size - 2) {
                 

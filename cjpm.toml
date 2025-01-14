@@ -1,7 +1,7 @@
 [dependencies]
 
 [package]
-  cjc-version = "0.57.3"
+  cjc-version = "0.58.3"
   compile-option = "-O2"
   description = "The decoder and encoder for toml file by Cangjie."
   link-option = ""
@@ -9,6 +9,6 @@
   output-type = "dynamic"
   src-dir = "src"
   target-dir = ""
-  version = "0.1.1"
+  version = "0.2.1"
   package-configuration = {}
   scripts = {}
