@@ -456,7 +456,7 @@ public class Decoder {
                         }
                         groups[i] = groupStr[1..groupStr.size - 1]
                     } else {
-                        if (!match (groupNameRe.matches(groups[i])) {
+                        if (!match (groupNameRe.find(groups[i])) {
                             case None => false
                             case Some(_) => true
                         }) {
