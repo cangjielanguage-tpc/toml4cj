@@ -2,7 +2,7 @@
 //3rd_party_lib:toml4cj/build/toml4cj
 //data_file:../sourcefile/source_int.toml
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 import std.unittest.*
 import std.fs.*
 import encoding.json.*
@@ -37,7 +37,7 @@ public class DecoderTest{
         @Assert(arr_str[0],"\"int1\":\"99\"")
 
         //load(file: File)
-        let file = File(filePath,OpenMode.ReadWrite)
+        let file = File(filePath,OpenOption.Open(true,true))
         decoder.load(file)   
         strData =  decoder.decode().toString()
         // println("strData::> ${strData}")

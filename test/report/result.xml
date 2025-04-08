@@ -1,6 +1,2 @@
 <?xml version="1.0" ?>
-<testsuites errors="0" failures="0" skipped="0" tests="1">
-    <testsuite errors="0" failures="0" name="g/workspace/toml4cj/test/log/split_log/testbool.DecoderTest" skipped="0" tests="1" time="0.00056707">
-        <testcase class_name="g/workspace/toml4cj/test/log/split_log/testbool.DecoderTest" name="testBool" time="0.00056336"/>
-    </testsuite>
-</testsuites>
+<testsuites errors="13" failures="0" skipped="0" tests="13"/>

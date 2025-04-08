@@ -3,7 +3,7 @@
 //data_file:testbool.cj
 //data_file:../sourcefile/source_other.properties
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 import std.unittest.*
 import std.fs.*
 
@@ -35,7 +35,7 @@ public class DecoderTest{
         //load(file: File)
         let decoder_2 = Decoder() 
         try {
-            let file = File(filePath_2,OpenMode.ReadWrite)
+            let file = File(filePath_2,OpenOption.Open(true,true))
             decoder_2.load(file)   
             strData =  decoder_2.decode().toString()
             println("strData::> ${strData}")

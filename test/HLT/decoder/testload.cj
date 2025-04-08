@@ -4,7 +4,7 @@
 //data_file:testbool.cj
 //data_file:../sourcefile/source_other.properties
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 import std.unittest.*
 import std.fs.*
 
@@ -37,7 +37,7 @@ public class DecoderTest{
 
         //load(file: File)
         try {
-            let file = File(filePath_2,OpenMode.ReadWrite)
+            let file = File(filePath_2,OpenOption.Open(true,true))
             decoder.load(file)   
         } catch (e2: Exception){
             println("e2>>>> ${e2}")

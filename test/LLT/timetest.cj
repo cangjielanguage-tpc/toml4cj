@@ -2,7 +2,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import std.posix.*
+import std.os.posix.*
 import std.time.*
 
 var returnFlag: Int32 = 0

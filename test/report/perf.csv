@@ -1,2 +1,1 @@
 class,case_name,status,case_time_elapsed(ns),case_time_per_op(ns/op)
-g/workspace/toml4cj/test/log/split_log/testbool.DecoderTest,testBool, PASSED ,563360.0,
