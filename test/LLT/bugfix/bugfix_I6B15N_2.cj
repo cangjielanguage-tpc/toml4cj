@@ -3,7 +3,7 @@
 // EXEC: ./main
 
 import toml4cj.decoders.*
-import encoding.json.*
+internal import stdx.encoding.json.*
 
 main() {
 	var url: String = "2.toml"

@@ -5,6 +5,7 @@ import toml4cj.decoders.*
 import std.posix.*
 import std.unittest.*
 import std.time.*
+internal import stdx.encoding.json.*
 
 /*
     public init(tomlOffset: String)

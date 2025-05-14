@@ -14,10 +14,10 @@ import std.io.InputStream
 import std.collection.*
 import std.regex.*
 import std.unicode.*
-import serialization.serialization.*
+internal import stdx.serialization.serialization.*
 import std.convert.*
 import std.time.*
-import encoding.json.*
+internal import stdx.encoding.json.*
 
 enum DecodeMode {
     | UNSPECIFIED
