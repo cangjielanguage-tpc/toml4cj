@@ -5,7 +5,7 @@ import toml4cj.decoders.*
 import std.posix.*
 import std.unittest.*
 import std.fs.*
-import encoding.json.*
+internal import stdx.encoding.json.*
 
 /*
     public init()
