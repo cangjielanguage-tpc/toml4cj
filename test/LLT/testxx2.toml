@@ -1,0 +1,8 @@
+aaa = "aaa"
+ccc = ["ccc", "cccccc"]
+bbb = "bbb"
+
+[bmap]
+  [bmap.b]
+    bset = ["bset"]
+    bmap2 = {"x" = "y", "y" = "x"}

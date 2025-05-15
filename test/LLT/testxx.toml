@@ -1,0 +1,34 @@
+[Log]
+  level = "Debug"
+
+[Server]
+  address = "127.0.0.1"
+  port = 8080
+  langage.default = "zh_CN"
+
+[Log2]
+  level = "Debug"
+
+[Log3]
+  level = "Debug"
+
+  [Log4]
+  level = "Debug"
+
+  [Log5]
+  level = "Debug"
+
+  [Log6]
+  level = "Debug"
+
+  [Log7]
+  level = "Debug"
+
+  [Log8]
+  level = "Debug"
+
+  [Log9]
+  level = "Debug"
+
+  [Log10]
+  level = "Debug"

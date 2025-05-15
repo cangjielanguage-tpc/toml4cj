@@ -1,0 +1,19 @@
+[package]
+  cjc-version = "0.60.4"
+  name = "demo"
+  description = "nothing here"
+  version = "1.0.0"
+  target-dir = ""
+  src-dir = ""
+  output-type = "dynamic"
+  compile-option = "-O2"
+  override-compile-option = ""
+  link-option = ""
+  package-configuration = {}
+  scripts = {}
+
+[dependencies]
+  toml = {path = "./toml"}
+
+[target.aarch64-linux-ohos]
+  path-option = [ "${CANGJIE_STDX_PATH}/windows_x86_64_llvm/dynamic/stdx" ]

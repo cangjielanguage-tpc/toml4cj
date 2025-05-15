@@ -936,7 +936,7 @@ public class Decoder {
             candidate_groups.remove(at: 0)
             let val = candidate_group.split("=", 2)
             let value = val[1].trim()
-            if (value[0] == value[value.size-1] && (Rune(value[0]) == r'\'' || Rune(value[0]) == r'"') || "-0123456789".contains(value[0].toString()) || (value == "true" || value == "false") || (Rune(value[0]) == r'[' && Rune(value[value.size -1]) == r']') || (Rune(value[0]) == r'{' && Rune(value[value.size -1]) == r'}') ) {
+            if (value[0] == value[value.size-1] && (Rune(value[0]) == r'\'' || Rune(value[0]) == r'"') || "-0123456789".contains(value[..1]) || (value == "true" || value == "false") || (Rune(value[0]) == r'[' && Rune(value[value.size -1]) == r']') || (Rune(value[0]) == r'{' && Rune(value[value.size -1]) == r'}') ) {
                 groups.add(candidate_group)
             }
             else {
@@ -1277,7 +1277,7 @@ public class Decoder {
             while (levels[levels.size-1] == "") {
                 levels.remove(at: levels.size-1)
             }
-            for (levelIndx in 0..levels.size - 2) {
+            for (levelIndx in 0..levels.size - 1) {
                 
                 if (!jv.containsKey(levels[levelIndx])) {
                     jv.put(levels[levelIndx], JsonObject())
@@ -1322,9 +1322,11 @@ public class Decoder {
                     for (str in value) {
                         ja.add(JsonString(str))
                     }
-                    jvconst.put(pair[0], ja)
+                    jv.put(pair[0], ja)
+                } else if (vtype == "inline_object") {
+                    jv.put(pair[0],  JsonValue.fromStr(value[0]))
                 } else {
-                    jvconst.put(pair[0], JsonString(value[0]))
+                    jv.put(pair[0], JsonString(value[0]))
                 }
 
             }
