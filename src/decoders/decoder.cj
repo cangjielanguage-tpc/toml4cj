@@ -110,7 +110,7 @@ public class Decoder {
      */
     public func decode():JsonObject {
         let implicitGroups: ArrayList<String> = ArrayList<String>()
-        let original: String = readData()
+        let original: String = normalizeLineEndings(readData())
 
         this.slLine = original.split(Symbols.LF)
         var sl: Array<Rune> = original.toRuneArray()
@@ -1109,6 +1109,13 @@ public class Decoder {
             case _ => throw Exception("Must specify the data source first")
         }
         data
+    }
+
+    private func normalizeLineEndings(data: String): String {
+        if (!data.contains(Symbols.CRLF)) {
+            return data
+        }
+        return String.join(data.split(Symbols.CRLF), delimiter: Symbols.LF)
     }
 
     /*
