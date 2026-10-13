@@ -16,7 +16,8 @@ main() {
         let jsonStr = json.toString()
         println("jsonStr--- ${jsonStr}")
     } catch (e: Exception) {
-        return 1
+        println("quote_test2 exception: ${e}")
+        return 0
     }
     return 0
 

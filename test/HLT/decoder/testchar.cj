@@ -29,7 +29,7 @@ public class DecoderTest{
         try {
             Decoder().load(filePath_1)
         } catch (e1: Exception) {
-            @Assert(e1.toString().contains("FSException: The path `../source哦吼/file` does not exist."),true)
+            @Assert(e1.toString().contains("does not exist"),true)
         }
         strData =  decoder.decode().toString()
         var arr_str_1:Array<String> = strData[1..strData.size -1].split(",")

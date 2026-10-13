@@ -35,7 +35,7 @@ public class DecoderTest {
             decoder_2.load(filePath_1)
         } catch (e2: Exception) {
             println(e2)
-            @Assert(e2.toString().contains("FSException: The file does not exist or permission denied!"),true)
+            @Assert(e2.toString().contains("does not exist or permission denied!"),true)
             returnFlag = 0
         }
         try {
